@@ -1,455 +1,808 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANIDEX — Animal Warfare Database</title>
+    <title>Anidex — An Encyclopedia of Animal Life</title>
+    <meta name="description"
+        content="Anidex is an illustrated encyclopedia of animal life, arranged by scientific classification: class, order, family, genus and species.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..700&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script>
+        // Apply the saved (or system) theme before first paint to avoid a flash.
+        (function () {
+            var t = null;
+            try { t = localStorage.getItem('anidex-theme'); } catch (e) { }
+            if (!t) t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 </head>
 
-<body>
+<body data-mode="animals">
+    <a class="skip-link" href="#results">Skip to results</a>
 
-    <!-- Mobile Header -->
-    <header class="mobile-header">
-        <span class="brand-pixel">ANIDEX</span>
-        <div class="mobile-actions">
-            <button class="icon-btn" onclick="App.triggerBioScanner()" title="Bio Scanner">📷</button>
-            <button class="icon-btn" onclick="App.toggleFilter()" title="Filters">&#9776;</button>
+    <!-- ===== Masthead ===== -->
+    <header class="masthead">
+        <div class="masthead-inner">
+            <a class="wordmark" href="./" aria-label="Anidex home">
+                <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M2 14h6M8 6v16M8 6h7M8 22h7M8 14h9M15 6h5M15 22h5M17 14h5" />
+                    <circle cx="23.5" cy="6" r="1.6" fill="currentColor" stroke="none" />
+                    <circle cx="23.5" cy="22" r="1.6" fill="currentColor" stroke="none" />
+                    <circle cx="25" cy="14" r="1.6" fill="currentColor" stroke="none" />
+                </svg>
+                <span>Anidex</span>
+            </a>
+
+            <div class="mast-search" role="search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7.5" />
+                    <path d="m21 21-4.35-4.35" />
+                </svg>
+                <input type="search" id="q" placeholder="Search animals, families, habitats" autocomplete="off"
+                    aria-label="Search the encyclopedia" oninput="App.filter()">
+                <span class="kbd-hint" aria-hidden="true">/</span>
+            </div>
+
+            <nav class="mast-nav" aria-label="Sections">
+                <button class="nav-link" id="btn-animals" aria-current="page" onclick="App.setMode('animals')">Animals</button>
+                <button class="nav-link" id="btn-items" onclick="App.setMode('items')">Items</button>
+                <a class="nav-link" href="animal_report.html">Rankings</a>
+                <a class="nav-link" href="minigames.html">Minigames</a>
+                <span class="nav-sep" aria-hidden="true"></span>
+                <button class="icon-btn" onclick="App.triggerBioScanner()" title="Identify an animal from a photo"
+                    aria-label="Identify an animal from a photo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+                        <circle cx="12" cy="12" r="3.2" />
+                    </svg>
+                </button>
+                <button class="icon-btn" id="theme-toggle" onclick="App.toggleTheme()" title="Switch light and dark theme"
+                    aria-label="Switch light and dark theme">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" />
+                    </svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+                    </svg>
+                </button>
+            </nav>
         </div>
     </header>
 
-    <!-- Sidebar / Filter Panel -->
-    <aside id="sidebar">
-        <div class="sidebar-inner">
-            <div class="sidebar-brand">
-                <span class="brand-pixel">ANIDEX</span>
-                <span class="sidebar-subtitle">ANIMAL WARFARE DATABASE</span>
-                <button class="tab-btn"
-                    style="margin-top:15px;width:100%;background:var(--accent);color:var(--bg-root);border:none;cursor:pointer;"
-                    onclick="App.triggerBioScanner()">📷 BIO SCANNER</button>
-                <a href="animal_report.html" class="tab-btn"
-                    style="margin-top:10px;text-decoration:none;display:block;text-align:center;width:100%;box-sizing:border-box;">&#127894;
-                    FULL RANKINGS</a>
-                <a href="minigames.html" class="tab-btn"
-                    style="margin-top:8px;text-decoration:none;display:block;text-align:center;width:100%;box-sizing:border-box;background:rgba(255,0,0,0.12);border:1px solid rgba(255,0,0,0.35);color:#ff4444;">🎮
-                    MINIGAMES</a>
+    <!-- ===== Hero with class index ===== -->
+    <section class="hero">
+        <svg class="hero-tree" viewBox="0 0 920 380" preserveAspectRatio="none" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path vector-effect="non-scaling-stroke" d="M0 190.0H70M70 102.5V277.5M70 102.5H111M111 60.5V144.5M111 60.5H148M148 40.3V80.7M148 40.3H198M198 30.7V50.0M198 30.7H254M254 26.0V35.3M254 26.0H307M307 26.0H900M254 35.3H291M291 35.3H900M198 50.0H236M236 45.4V54.7M236 45.4H306M306 45.4H900M236 54.7H275M275 54.7H900M148 80.7H192M192 71.0V90.3M192 71.0H267M267 66.3V75.6M267 66.3H319M319 66.3H900M267 75.6H344M344 75.6H900M192 90.3H228M228 84.1V96.5M228 84.1H274M274 84.1H900M228 90.3H268M268 90.3H900M228 96.5H267M267 96.5H900M111 144.5H158M158 117.6V171.4M158 117.6H200M200 111.2V124.1M200 111.2H262M262 111.2H900M200 124.1H251M251 124.1H900M158 144.5H216M216 138.0V151.0M216 138.0H253M253 138.0H900M216 151.0H259M259 151.0H900M158 171.4H222M222 164.9V177.8M222 164.9H270M270 164.9H900M222 177.8H282M282 177.8H900M70 277.5H124M124 235.5V319.5M124 235.5H193M193 215.3V255.7M193 215.3H238M238 205.7V225.0M238 205.7H295M295 199.5V211.9M295 199.5H361M361 199.5H900M295 205.7H341M341 205.7H900M295 211.9H372M372 211.9H900M238 225.0H277M277 220.4V229.7M277 220.4H344M344 220.4H900M277 229.7H318M318 229.7H900M193 255.7H248M248 246.0V265.3M248 246.0H312M312 239.8V252.2M312 239.8H371M371 239.8H900M312 246.0H384M384 246.0H900M312 252.2H360M360 252.2H900M248 265.3H313M313 260.7V270.0M313 260.7H373M373 260.7H900M313 270.0H367M367 270.0H900M124 319.5H195M195 292.6V346.4M195 292.6H250M250 286.2V299.1M250 286.2H286M286 286.2H900M250 299.1H315M315 299.1H900M195 319.5H257M257 310.9V328.1M257 310.9H328M328 310.9H900M257 319.5H304M304 319.5H900M257 328.1H308M308 328.1H900M195 346.4H258M258 339.9V352.8M258 339.9H313M313 339.9H900M258 352.8H300M300 352.8H900"/></g></svg>
+        <div class="hero-inner">
+            <h1 class="hero-title" id="hero-title">An encyclopedia of animal life</h1>
+            <p class="hero-lede" id="hero-lede">Loading the collection…</p>
+            <div class="class-index" id="class-index" role="tablist" aria-label="Browse by class"></div>
+        </div>
+    </section>
+
+    <div class="layout">
+        <!-- ===== Filter rail ===== -->
+        <aside id="sidebar" class="rail" aria-label="Refine results">
+            <div class="rail-head">
+                <h2>Refine results</h2>
+                <button class="link-btn" onclick="App.reset()">Clear all</button>
+                <button class="link-btn rail-close" onclick="App.toggleFilter()">Close</button>
             </div>
 
-            <!-- Search Bar -->
-            <div class="filter-section">
-                <div class="filter-label">SEARCH</div>
-                <div class="search-wrap">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                    </svg>
-                    <input type="text" id="q" placeholder="Search name, ability..." oninput="App.filter()">
-                </div>
-            </div>
-
-            <!-- Tab Switch -->
-            <div class="filter-section">
-                <div class="filter-label">VIEW MODE</div>
-                <div class="tab-switch">
-                    <button class="tab-btn active" id="btn-animals" onclick="App.setMode('animals')">ANIMALS</button>
-                    <button class="tab-btn" id="btn-items" onclick="App.setMode('items')">ITEMS</button>
-                </div>
-            </div>
-
-            <!-- Animal Filters (shown only in animals mode) -->
             <div id="animal-filters">
-                <div class="filter-section">
-                    <div class="filter-label">BIOME</div>
-                    <select id="flt-biome" onchange="App.filter()">
-                        <option value="">All Biomes</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">CATEGORY 1</div>
-                    <select id="flt-cat1" onchange="App.filter()">
-                        <option value="">All Categories</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">CATEGORY 2</div>
-                    <select id="flt-cat2" onchange="App.filter()">
-                        <option value="">All Categories</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">RARITY</div>
-                    <select id="flt-rarity" onchange="App.filter()">
-                        <option value="">All Rarities</option>
-                        <option value="Common">Common</option>
-                        <option value="Uncommon">Uncommon</option>
-                        <option value="Rare">Rare</option>
-                        <option value="Epic">Epic</option>
-                        <option value="Legendary">Legendary</option>
-                        <option value="Mythical">Mythical</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <label
-                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-dim); font-size: 11px; font-weight: 700; letter-spacing: 1px;">
-                        <input type="checkbox" id="chk-exclude-mythical" onchange="App.filter()"
-                            style="accent-color: var(--accent);">
-                        EXCLUDE MYTHICALS
-                    </label>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">ABILITY</div>
-                    <select id="flt-ability" onchange="App.filter()">
-                        <option value="">All Abilities</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">MOVE</div>
-                    <select id="flt-move" onchange="App.filter()">
-                        <option value="">All Moves</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">DROP</div>
-                    <select id="flt-drop" onchange="App.filter()">
-                        <option value="">All Drops</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">CLASS</div>
-                    <select id="flt-class" onchange="App.onClassChange()">
-                        <option value="">All Classes</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">ORDER</div>
-                    <div class="custom-select-trigger" id="trigger-order" onclick="App.openSearchSelector('order')">All
-                        Orders</div>
-                    <input type="hidden" id="flt-order" value="">
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">FAMILY</div>
-                    <div class="custom-select-trigger" id="trigger-family" onclick="App.openSearchSelector('family')">
-                        All Families</div>
-                    <input type="hidden" id="flt-family" value="">
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">SUBFAMILY</div>
-                    <div class="custom-select-trigger" id="trigger-subfamily"
-                        onclick="App.openSearchSelector('subfamily')">All Subfamilies</div>
-                    <input type="hidden" id="flt-subfamily" value="">
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">GENUS</div>
-                    <div class="custom-select-trigger" id="trigger-genus" onclick="App.openSearchSelector('genus')">All
-                        Genus</div>
-                    <input type="hidden" id="flt-genus" value="">
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">DIET</div>
-                    <select id="flt-diet" onchange="App.filter()">
-                        <option value="">All Diets</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">WEIGHT</div>
-                    <select id="flt-weight" onchange="App.filter()">
-                        <option value="">All Weights</option>
-                        <option value="tiny">&lt; 1 kg</option>
-                        <option value="small">1 - 10 kg</option>
-                        <option value="medium">10 - 50 kg</option>
-                        <option value="large">50 - 100 kg</option>
-                        <option value="huge">&gt; 100 kg</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">SIZE</div>
-                    <select id="flt-size" onchange="App.filter()">
-                        <option value="">All Sizes</option>
-                        <option value="tiny">&lt; 0.5 m</option>
-                        <option value="small">0.5 - 2 m</option>
-                        <option value="medium">2 - 5 m</option>
-                        <option value="large">5 - 10 m</option>
-                        <option value="huge">&gt; 10 m</option>
-                    </select>
-                </div>
-                <div class="filter-section">
-                    <div class="filter-label">ROBUSTNESS</div>
-                    <select id="flt-robustness" onchange="App.filter()">
-                        <option value="">All Robustness</option>
-                        <option value="tiny">&lt; 1 λ</option>
-                        <option value="small">1 - 10 λ</option>
-                        <option value="medium">10 - 50 λ</option>
-                        <option value="large">50 - 100 λ</option>
-                        <option value="huge">&gt; 100 λ</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">BST</div>
-                    <select id="flt-bst" onchange="App.filter()">
-                        <option value="">All BST</option>
-                        <option value="vlow">&lt; 300</option>
-                        <option value="low">300 - 450</option>
-                        <option value="med">450 - 550</option>
-                        <option value="high">550 - 650</option>
-                        <option value="vhigh">&gt; 650</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">UNITS</div>
-                    <select id="flt-units" onchange="App.setUnitSystem(this.value)">
-                        <option value="metric">Metric (KG/M)</option>
-                        <option value="imperial">Imperial (LBS/FT)</option>
-                    </select>
-                </div>
-
-                <div class="filter-section">
-                    <div class="filter-label">SORT BY</div>
-                    <div class="sort-chips" id="sort-chips">
-                        <button class="sort-chip" data-sort="name" onclick="App.setSort('name')">NAME</button>
-                        <button class="sort-chip" data-sort="health" onclick="App.setSort('health')">HP</button>
-                        <button class="sort-chip" data-sort="attack" onclick="App.setSort('attack')">ATK</button>
-                        <button class="sort-chip" data-sort="defense" onclick="App.setSort('defense')">DEF</button>
-                        <button class="sort-chip" data-sort="power" onclick="App.setSort('power')">PWR</button>
-                        <button class="sort-chip" data-sort="resistance"
-                            onclick="App.setSort('resistance')">RES</button>
-                        <button class="sort-chip" data-sort="speed" onclick="App.setSort('speed')">SPD</button>
-                        <button class="sort-chip" data-sort="bst" onclick="App.setSort('bst')">BST</button>
-                        <button class="sort-chip active" data-sort="weight"
-                            onclick="App.setSort('weight')">WEIGHT</button>
-                        <button class="sort-chip" data-sort="size" onclick="App.setSort('size')">SIZE</button>
-                        <button class="sort-chip" data-sort="robustness"
-                            onclick="App.setSort('robustness')">ROBUSTNESS</button>
-                        <button class="sort-chip" data-sort="taxonomy"
-                            onclick="App.setSort('taxonomy')">TAXONOMY</button>
+                <details class="fgroup" open>
+                    <summary>Classification</summary>
+                    <div class="fgroup-body">
+                        <div class="field">
+                            <label class="field-label" for="flt-class">Class</label>
+                            <select id="flt-class" onchange="App.onClassChange()">
+                                <option value="">All classes</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <span class="field-label" id="lbl-order">Order</span>
+                            <button type="button" class="picker-btn" id="trigger-order" aria-labelledby="lbl-order trigger-order"
+                                onclick="App.openSearchSelector('order')">All orders</button>
+                            <input type="hidden" id="flt-order" value="">
+                        </div>
+                        <div class="field">
+                            <span class="field-label" id="lbl-family">Family</span>
+                            <button type="button" class="picker-btn" id="trigger-family" aria-labelledby="lbl-family trigger-family"
+                                onclick="App.openSearchSelector('family')">All families</button>
+                            <input type="hidden" id="flt-family" value="">
+                        </div>
+                        <div class="field">
+                            <span class="field-label" id="lbl-subfamily">Subfamily</span>
+                            <button type="button" class="picker-btn" id="trigger-subfamily"
+                                aria-labelledby="lbl-subfamily trigger-subfamily"
+                                onclick="App.openSearchSelector('subfamily')">All subfamilies</button>
+                            <input type="hidden" id="flt-subfamily" value="">
+                        </div>
+                        <div class="field">
+                            <span class="field-label" id="lbl-genus">Genus</span>
+                            <button type="button" class="picker-btn" id="trigger-genus" aria-labelledby="lbl-genus trigger-genus"
+                                onclick="App.openSearchSelector('genus')">All genera</button>
+                            <input type="hidden" id="flt-genus" value="">
+                        </div>
                     </div>
-                    <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
-                        <span id="order-label">ASCENDING</span>
-                        <span id="order-icon">↑</span>
-                    </button>
-                </div>
+                </details>
+
+                <details class="fgroup" open>
+                    <summary>Habitat and diet</summary>
+                    <div class="fgroup-body">
+                        <div class="field">
+                            <label class="field-label" for="flt-biome">Habitat</label>
+                            <select id="flt-biome" onchange="App.filter()">
+                                <option value="">All habitats</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-diet">Diet</label>
+                            <select id="flt-diet" onchange="App.filter()">
+                                <option value="">All diets</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="fgroup">
+                    <summary>Body size</summary>
+                    <div class="fgroup-body">
+                        <div class="field">
+                            <label class="field-label" for="flt-weight">Weight</label>
+                            <select id="flt-weight" onchange="App.filter()">
+                                <option value="">Any weight</option>
+                                <option value="tiny">Under 1 kg</option>
+                                <option value="small">1 to 10 kg</option>
+                                <option value="medium">10 to 50 kg</option>
+                                <option value="large">50 to 100 kg</option>
+                                <option value="huge">Over 100 kg</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-size">Length or height</label>
+                            <select id="flt-size" onchange="App.filter()">
+                                <option value="">Any size</option>
+                                <option value="tiny">Under 0.5 m</option>
+                                <option value="small">0.5 to 2 m</option>
+                                <option value="medium">2 to 5 m</option>
+                                <option value="large">5 to 10 m</option>
+                                <option value="huge">Over 10 m</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-robustness">Robustness (weight ÷ size)</label>
+                            <select id="flt-robustness" onchange="App.filter()">
+                                <option value="">Any robustness</option>
+                                <option value="tiny">Under 1 λ</option>
+                                <option value="small">1 to 10 λ</option>
+                                <option value="medium">10 to 50 λ</option>
+                                <option value="large">50 to 100 λ</option>
+                                <option value="huge">Over 100 λ</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-units">Units</label>
+                            <select id="flt-units" onchange="App.setUnitSystem(this.value)">
+                                <option value="metric">Metric (kg, m)</option>
+                                <option value="imperial">Imperial (lb, ft)</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="fgroup">
+                    <summary>Combat data</summary>
+                    <div class="fgroup-body">
+                        <div class="field">
+                            <label class="field-label" for="flt-rarity">Rarity</label>
+                            <select id="flt-rarity" onchange="App.filter()">
+                                <option value="">Any rarity</option>
+                                <option value="Common">Common</option>
+                                <option value="Uncommon">Uncommon</option>
+                                <option value="Rare">Rare</option>
+                                <option value="Epic">Epic</option>
+                                <option value="Legendary">Legendary</option>
+                                <option value="Mythical">Mythical</option>
+                            </select>
+                        </div>
+                        <label class="check">
+                            <input type="checkbox" id="chk-exclude-mythical" onchange="App.filter()">
+                            Exclude mythical animals
+                        </label>
+                        <div class="field">
+                            <label class="field-label" for="flt-cat1">Category</label>
+                            <select id="flt-cat1" onchange="App.filter()">
+                                <option value="">Any category</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-cat2">Second category</label>
+                            <select id="flt-cat2" onchange="App.filter()">
+                                <option value="">Any category</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-ability">Ability</label>
+                            <select id="flt-ability" onchange="App.filter()">
+                                <option value="">Any ability</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-move">Move</label>
+                            <select id="flt-move" onchange="App.filter()">
+                                <option value="">Any move</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-drop">Drop</label>
+                            <select id="flt-drop" onchange="App.filter()">
+                                <option value="">Any drop</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="flt-bst">Base stat total</label>
+                            <select id="flt-bst" onchange="App.filter()">
+                                <option value="">Any total</option>
+                                <option value="vlow">Under 300</option>
+                                <option value="low">300 to 450</option>
+                                <option value="med">450 to 550</option>
+                                <option value="high">550 to 650</option>
+                                <option value="vhigh">Over 650</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
             </div>
 
-            <!-- Items filter -->
             <div id="item-filters" style="display:none;">
-                <div class="filter-section">
-                    <div class="filter-label">ITEM CATEGORY</div>
-                    <select id="flt-item-cat" onchange="App.filterItems()">
-                        <option value="">All Categories</option>
-                    </select>
+                <details class="fgroup" open>
+                    <summary>Items</summary>
+                    <div class="fgroup-body">
+                        <div class="field">
+                            <label class="field-label" for="flt-item-cat">Category</label>
+                            <select id="flt-item-cat" onchange="App.filterItems()">
+                                <option value="">All categories</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </aside>
+        <div id="sidebar-overlay" class="rail-scrim" onclick="App.toggleFilter()"></div>
+
+        <!-- ===== Results ===== -->
+        <main id="results" class="results" tabindex="-1">
+            <div class="toolbar">
+                <div>
+                    <nav class="crumbs" id="breadcrumb" aria-label="Classification path"></nav>
+                    <div class="result-count" id="result-count" role="status" aria-live="polite">Loading…</div>
+                </div>
+                <div class="toolbar-controls">
+                    <button class="btn filter-toggle" onclick="App.toggleFilter()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            aria-hidden="true">
+                            <path d="M4 6h16M7 12h10M10 18h4" />
+                        </svg>
+                        Filters<span id="filter-count"></span>
+                    </button>
+                    <label class="sort-field">Sort
+                        <select id="sort-select" onchange="App.setSort(this.value)">
+                            <option value="taxonomy">Taxonomic order</option>
+                            <option value="name">Name</option>
+                            <option value="weight">Weight</option>
+                            <option value="size">Length or height</option>
+                            <option value="robustness">Robustness</option>
+                            <option value="health">Health</option>
+                            <option value="attack">Attack</option>
+                            <option value="defense">Defense</option>
+                            <option value="power">Power</option>
+                            <option value="resistance">Resistance</option>
+                            <option value="speed">Speed</option>
+                            <option value="bst">Base stat total</option>
+                        </select>
+                    </label>
+                    <button class="btn" id="order-btn" onclick="App.toggleOrder()" aria-label="Reverse sort direction">
+                        <span id="order-label">Ascending</span>
+                        <span id="order-icon" aria-hidden="true">↑</span>
+                    </button>
+                    <div class="seg" role="group" aria-label="Layout">
+                        <button id="view-grid" aria-pressed="true" onclick="App.setView('grid')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <rect x="4" y="4" width="6.5" height="6.5" /><rect x="13.5" y="4" width="6.5" height="6.5" />
+                                <rect x="4" y="13.5" width="6.5" height="6.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" />
+                            </svg>
+                            Gallery
+                        </button>
+                        <button id="view-list" aria-pressed="false" onclick="App.setView('list')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                aria-hidden="true">
+                                <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />
+                            </svg>
+                            Index
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <button class="reset-btn" onclick="App.reset()">RESET ALL FILTERS</button>
-        </div>
-    </aside>
+            <div class="active-filters" id="active-filters"></div>
 
-    <div id="sidebar-overlay" class="sidebar-overlay" onclick="App.toggleFilter()"></div>
+            <div id="grid" class="grid"></div>
 
-    <!-- Main Content -->
-    <main>
-        <div class="main-header">
-            <div class="result-count" id="result-count">Loading...</div>
-        </div>
+            <div id="sentinel" style="height:1px;"></div>
+            <div id="loading-more" class="loading-more" style="display:none;">
+                <div class="spinner" role="status" aria-label="Loading more"></div>
+            </div>
+        </main>
+    </div>
 
-        <div id="grid" class="grid"></div>
+    <footer class="site-foot">
+        <p>Entries are arranged the way field guides are: vertebrates before invertebrates, then by class, order,
+            family, genus and species. Within an order, families run alphabetically. Names and classification follow
+            the data supplied with each entry.</p>
+    </footer>
 
-        <!-- Infinite scroll sentinel -->
-        <div id="sentinel" style="height:1px;"></div>
-        <div id="loading-more" class="loading-more" style="display:none;">
-            <div class="loading-spinner"></div>
-        </div>
-    </main>
-
-    <!-- Detail Modal -->
-    <div id="modal" class="modal-overlay" onclick="App.closeModal()">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="App.closeModal()">✕</button>
+    <!-- ===== Entry (article) ===== -->
+    <div id="modal" class="overlay" onclick="App.closeModal()">
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="entry-title" onclick="event.stopPropagation()">
+            <div class="sheet-bar">
+                <span class="sheet-label">Anidex entry</span>
+                <button class="sheet-close" id="modal-close" onclick="App.closeModal()">Close <kbd>Esc</kbd></button>
+            </div>
             <div id="modal-content"></div>
         </div>
     </div>
 
-    <!-- Search Selector Modal -->
-    <div id="search-selector-modal" class="modal-overlay" onclick="App.closeSearchSelector()">
-        <div class="modal-box search-selector-box" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="App.closeSearchSelector()">✕</button>
-            <div class="search-selector-header">
-                <div class="search-selector-title" id="search-selector-title">SELECT ORDER</div>
-                <div class="search-selector-search-wrap">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                    </svg>
-                    <input type="text" id="search-selector-input" placeholder="Type to search..."
-                        oninput="App.filterSearchSelector()" autocomplete="off">
-                </div>
-            </div>
-            <div class="search-selector-body" id="search-selector-options">
-                <!-- Dynamically generated items -->
-            </div>
+    <!-- ===== Taxon picker ===== -->
+    <div id="search-selector-modal" class="overlay is-center" onclick="App.closeSearchSelector()">
+        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="search-selector-title"
+            onclick="event.stopPropagation()">
+            <button class="dialog-close" onclick="App.closeSearchSelector()" aria-label="Close">✕</button>
+            <h2 id="search-selector-title">Choose an order</h2>
+            <input type="search" class="picker-input" id="search-selector-input" placeholder="Type to narrow the list"
+                oninput="App.filterSearchSelector()" autocomplete="off" aria-label="Narrow the list">
+            <div class="picker-list" id="search-selector-options" role="listbox"></div>
+        </div>
+    </div>
+
+    <!-- ===== Bio scanner ===== -->
+    <input type="file" id="bio-scanner-upload" accept="image/*" capture="environment" onchange="App.handleBioScan(event)"
+        style="display:none;">
+    <div id="bio-scanner-overlay" class="scanner" role="status">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+            <circle cx="12" cy="12" r="3.2" />
+        </svg>
+        <div id="bio-scanner-status" class="scanner-status">Initializing scanner…</div>
+        <div class="scanner-track">
+            <div id="bio-scanner-progress"></div>
         </div>
     </div>
 
     <script>
+        /* ======================================================================
+           Helpers
+           ====================================================================== */
+        const $ = id => document.getElementById(id);
+        const NF = new Intl.NumberFormat('en-US');
+        const nf = n => NF.format(n);
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const NONE = /^(|unknown|none|n\/a|na|null|undefined|-|—)$/i;
+        // Taxon names: "carnivora", "CARNIVORA" and "Carnivora" all become "Carnivora".
+        const tcase = v => { v = String(v ?? '').trim(); return NONE.test(v) ? '' : v.charAt(0).toUpperCase() + v.slice(1).toLowerCase(); };
+        const sentence = v => { v = String(v ?? '').trim(); return v.charAt(0).toUpperCase() + v.slice(1); };
+        const splitList = v => String(v || '').split(',').map(s => s.trim()).filter(Boolean);
+        const slug = v => String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+        const sig = x => Number(Number(x).toPrecision(3)).toLocaleString('en-US', { maximumFractionDigits: 8 });
+        const cmpStr = (a, b) => a === b ? 0 : !a ? 1 : !b ? -1 : a.localeCompare(b);
+        const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function displayName(n) {
+            n = String(n || '').replace(/_/g, ' ').trim();
+            if (n === n.toLowerCase() || n === n.toUpperCase()) {
+                n = n.toLowerCase().replace(/(^|[\s\-(])([a-z\u00e0-\u00ff])/g, (m, p, c) => p + c.toUpperCase());
+            }
+            return n;
+        }
+
+        /* ======================================================================
+           Taxonomy: the order in which an encyclopedia lists animal groups.
+           Vertebrates first (mammals, birds, reptiles, amphibians, fishes), then
+           invertebrates. Orders follow the conventional evolutionary sequence for
+           each class; anything not listed falls back to alphabetical order.
+           ====================================================================== */
+        const CLASS_DEFS = [
+            ['mammalia', 'Mammals', /^(mammalia|mammals?)$/i],
+            ['aves', 'Birds', /^(aves|birds?)$/i],
+            ['reptilia', 'Reptiles', /^(reptilia|reptiles?)$/i],
+            ['amphibia', 'Amphibians', /^(amphibia|amphibians?)$/i],
+            ['chondrichthyes', 'Cartilaginous fishes', /chondrichthy|elasmobranch|cartilaginous|shark|^rays?$/i],
+            ['actinopterygii', 'Ray-finned fishes', /actinopter|osteichthy|teleost|^fish(es)?$|bony fish|ray-finned/i],
+            ['sarcopterygii', 'Lobe-finned fishes', /sarcopter|lobe-finned|coelacanth|lungfish/i],
+            ['agnatha', 'Jawless fishes', /agnath|cephalaspid|myxini|petromyz|jawless|lamprey|hagfish/i],
+            ['insecta', 'Insects', /insect/i],
+            ['arachnida', 'Arachnids', /arachnid/i],
+            ['malacostraca', 'Crustaceans', /malacostrac|crustace|branchiopod|maxillopod|thecostrac/i],
+            ['myriapoda', 'Myriapods', /diplopod|chilopod|myriapod|millipede|centipede/i],
+            ['cephalopoda', 'Cephalopods', /cephalopod/i],
+            ['gastropoda', 'Snails and slugs', /gastropod/i],
+            ['bivalvia', 'Bivalves', /bivalv/i],
+            ['cnidaria', 'Cnidarians', /anthozoa|scyphozoa|hydrozoa|cubozoa|cnidar|jellyfish|coral/i],
+            ['echinodermata', 'Echinoderms', /asteroid|echinoid|holothur|ophiuroid|crinoid|echinoderm/i],
+            ['porifera', 'Sponges', /demospong|sponge|porifera|calcarea|hexactinell/i],
+            ['annelida', 'Segmented worms', /clitellata|polychaet|annelid|worm/i],
+        ];
+
+        const ORDER_SEQ = {
+            mammalia: ['monotremata', 'didelphimorphia', 'paucituberculata', 'microbiotheria', 'dasyuromorphia', 'peramelemorphia', 'notoryctemorphia', 'diprotodontia',
+                'cingulata', 'pilosa', 'afrosoricida', 'macroscelidea', 'tubulidentata', 'hyracoidea', 'proboscidea', 'sirenia',
+                'eulipotyphla', 'erinaceomorpha', 'soricomorpha', 'insectivora', 'chiroptera', 'scandentia', 'dermoptera', 'primates',
+                'rodentia', 'lagomorpha', 'pholidota', 'carnivora', 'perissodactyla', 'artiodactyla', 'cetartiodactyla', 'cetacea'],
+            aves: ['struthioniformes', 'rheiformes', 'casuariiformes', 'apterygiformes', 'tinamiformes', 'anseriformes', 'galliformes', 'phoenicopteriformes',
+                'podicipediformes', 'columbiformes', 'pterocliformes', 'cuculiformes', 'caprimulgiformes', 'apodiformes', 'gruiformes', 'charadriiformes',
+                'sphenisciformes', 'procellariiformes', 'gaviiformes', 'ciconiiformes', 'suliformes', 'pelecaniformes', 'accipitriformes', 'cathartiformes',
+                'strigiformes', 'coliiformes', 'trogoniformes', 'bucerotiformes', 'coraciiformes', 'piciformes', 'falconiformes', 'psittaciformes', 'passeriformes'],
+            reptilia: ['testudines', 'crocodylia', 'crocodilia', 'rhynchocephalia', 'squamata', 'sauria', 'lacertilia', 'serpentes'],
+            amphibia: ['anura', 'caudata', 'urodela', 'gymnophiona', 'apoda'],
+            chondrichthyes: ['chimaeriformes', 'hexanchiformes', 'squaliformes', 'orectolobiformes', 'lamniformes', 'carcharhiniformes', 'rajiformes', 'myliobatiformes'],
+            actinopterygii: ['acipenseriformes', 'lepisosteiformes', 'anguilliformes', 'clupeiformes', 'cypriniformes', 'characiformes', 'siluriformes', 'salmoniformes',
+                'esociformes', 'gadiformes', 'beloniformes', 'cyprinodontiformes', 'syngnathiformes', 'scorpaeniformes', 'perciformes', 'pleuronectiformes', 'tetraodontiformes'],
+            insecta: ['odonata', 'ephemeroptera', 'orthoptera', 'phasmatodea', 'mantodea', 'blattodea', 'isoptera', 'dermaptera', 'hemiptera', 'thysanoptera', 'neuroptera',
+                'coleoptera', 'strepsiptera', 'mecoptera', 'siphonaptera', 'diptera', 'trichoptera', 'lepidoptera', 'hymenoptera'],
+            arachnida: ['scorpiones', 'pseudoscorpiones', 'solifugae', 'opiliones', 'araneae', 'acari', 'ixodida'],
+        };
+
+        function classInfo(cls) {
+            if (!cls) return { key: '', common: '', rank: 999 };
+            for (let i = 0; i < CLASS_DEFS.length; i++) {
+                if (CLASS_DEFS[i][2].test(cls)) return { key: CLASS_DEFS[i][0], common: CLASS_DEFS[i][1], rank: i };
+            }
+            return { key: cls.toLowerCase(), common: '', rank: 500 };
+        }
+        function orderRank(key, ord) {
+            if (!ord) return 2000;
+            const i = (ORDER_SEQ[key] || []).indexOf(ord.toLowerCase());
+            return i >= 0 ? i : 1000;
+        }
+
+        const PICKER_ALL = { order: 'All orders', family: 'All families', subfamily: 'All subfamilies', genus: 'All genera' };
+        const PICKER_TITLE = { order: 'Choose an order', family: 'Choose a family', subfamily: 'Choose a subfamily', genus: 'Choose a genus' };
+        const TAX_FIELD = { order: 'ord', family: 'fam', subfamily: 'sub', genus: 'gen' };
+        const TAX_CHAIN = ['class', 'order', 'family', 'subfamily', 'genus'];
+
+        const FILTER_DEFS = [
+            ['flt-class', 'Class'], ['flt-order', 'Order'], ['flt-family', 'Family'], ['flt-subfamily', 'Subfamily'], ['flt-genus', 'Genus'],
+            ['flt-biome', 'Habitat'], ['flt-diet', 'Diet'], ['flt-weight', 'Weight'], ['flt-size', 'Size'], ['flt-robustness', 'Robustness'],
+            ['flt-rarity', 'Rarity'], ['flt-cat1', 'Category'], ['flt-cat2', 'Category'], ['flt-ability', 'Ability'], ['flt-move', 'Move'],
+            ['flt-drop', 'Drop'], ['flt-bst', 'Base stats']
+        ];
+
+        /* ======================================================================
+           Sprites: resilient image loading.
+           Tries several file-name spellings and extensions, retries once for
+           transient network errors, and falls back to a labelled placeholder.
+           Run App.missing in the browser console to list animals with no image.
+           ====================================================================== */
+        const Sprites = {
+            cache: new Map(),
+            forOrg(org) {
+                const raw = String(org.name || '').trim();
+                const ascii = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const snake = slug(raw);
+                const asciiSnake = slug(ascii);
+                const sciSnake = slug(org.scientific_name);
+                const titleSnake = ascii.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                const dir = 'assets/sprites/';
+                const out = [];
+                const add = u => { if (u && !out.includes(u)) out.push(u); };
+                [org.sprite, org.image, org.img].forEach(v => { if (typeof v === 'string' && v) add(/^(https?:|assets\/|\/|\.)/.test(v) ? v : dir + v); });
+                add(`${dir}${snake}.png`);                                   // original convention: aardwolf.png
+                add(`${dir}${asciiSnake}.png`);                              // accents removed
+                add(`${dir}${snake.replace(/_/g, '-')}.png`);                // hyphenated
+                add(`${dir}${snake.replace(/_/g, '')}.png`);                 // no separators
+                add(`${dir}${titleSnake}.png`);                              // Aardwolf.png / Bald_Eagle.png
+                add(`${dir}${encodeURIComponent(raw)}.png`);                 // exactly as typed
+                add(`${dir}${sciSnake}.png`);                                // proteles_cristata.png
+                add(`${dir}${snake}.webp`);
+                add(`${dir}${snake}.jpg`);
+                add(`${dir}${snake}.PNG`);
+                return out;
+            },
+            forItem(item) {
+                const n = String(item.name || '').toLowerCase();
+                const dir = 'assets/items/';
+                const out = [];
+                const add = u => { if (!out.includes(u)) out.push(u); };
+                add(`${dir}${n.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.png`);
+                add(`${dir}${slug(n)}.png`);
+                add(`${dir}${slug(n).replace(/_/g, '-')}.png`);
+                add(`${dir}${n.replace(/[^a-z0-9]/g, '')}.png`);
+                return out;
+            },
+            mount(wrap, list, alt, key, eager) {
+                wrap.classList.add('is-loading');
+                const cached = this.cache.get(key);
+                if (cached) list = [cached, ...list.filter(u => u !== cached)];
+                const img = new Image();
+                img.alt = alt;
+                img.decoding = 'async';
+                img.draggable = false;
+                img.loading = eager ? 'eager' : 'lazy';
+                let i = 0, phase = 'try';
+                const fail = () => {
+                    img.remove();
+                    wrap.classList.remove('is-loading', 'has-img');
+                    wrap.classList.add('no-img');
+                    if (!App.missing.includes(key)) {
+                        App.missing.push(key);
+                        console.info(`[Anidex] No image found for "${key}". Tried:`, list);
+                    }
+                };
+                img.onload = () => {
+                    wrap.classList.remove('is-loading', 'no-img');
+                    wrap.classList.add('has-img');
+                    this.cache.set(key, img.getAttribute('src'));
+                };
+                img.onerror = () => {
+                    if (phase === 'try' && ++i < list.length) { img.src = list[i]; return; }
+                    if (phase === 'try') {
+                        // One delayed retry of the primary path, in case the first failure was transient.
+                        phase = 'retry';
+                        setTimeout(() => { img.src = list[0] + (list[0].includes('?') ? '&' : '?') + 'retry=' + Date.now(); }, 800);
+                        return;
+                    }
+                    fail();
+                };
+                img.src = list[0];
+                wrap.prepend(img);
+            }
+        };
+
+        /* ======================================================================
+           App
+           ====================================================================== */
         const App = {
-            db: { orgs: [], orgs2: [], moves: {}, items: [], abilities: {} },
+            db: { orgs: [], moves: {}, items: [], abilities: {} },
+            byName: new Map(),
+            missing: [],
             filtered: [],
             displayedCount: 0,
-            batchSize: 24,
+            batchSize: 36,
             mode: 'animals',
-            sortBy: 'weight',
+            view: 'grid',
+            sortBy: 'taxonomy',
             ascending: true,
             unitSystem: 'metric',
             observer: null,
-            searchSelector: {
-                type: '',
-                options: [],
-                filtered: [],
-                selectedValue: ''
-            },
+            last: { cls: null, ord: null, fam: null },
+            counts: null,
+            currentEntry: null,
+            lastFocus: null,
+            searchSelector: { type: '', options: [], filtered: [], selectedValue: '' },
 
+            /* ---------- Startup ---------- */
             async start() {
-                try {
-                    const [o1, o2, m, t, a] = await Promise.all([
-                        fetch('assets/Organisms.json').then(r => r.json()).catch(() => []),
-                        fetch('assets/Organisms2.json').then(r => r.json()).catch(() => []),
-                        fetch('assets/moves.json').then(r => r.json()).catch(() => []),
-                        fetch('assets/talismans.json').then(r => r.json()).catch(() => []),
-                        fetch('assets/abilities.json').then(r => r.json()).catch(() => [])
-                    ]);
+                const get = url => fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).catch(err => { console.warn('[Anidex] Could not load', url, err); return []; });
+                const [o1, o2, m, t, a] = await Promise.all([
+                    get('assets/Organisms.json'), get('assets/Organisms2.json'),
+                    get('assets/moves.json'), get('assets/talismans.json'), get('assets/abilities.json')
+                ]);
 
-                    this.db.orgs = [...(o1 || []), ...(o2 || [])];
-                    this.db.items = t || [];
-                    (m || []).forEach(mv => this.db.moves[mv.name.toLowerCase()] = mv);
-                    (a || []).forEach(ab => this.db.abilities[ab.name.toLowerCase()] = ab);
+                this.db.orgs = [...(o1 || []), ...(o2 || [])].filter(o => o && o.name);
+                this.db.items = t || [];
+                (m || []).forEach(mv => this.db.moves[String(mv.name).toLowerCase()] = mv);
+                (a || []).forEach(ab => this.db.abilities[String(ab.name).toLowerCase()] = ab);
 
-                    this.populateFilters();
-                    this.filter();
-                    this.setupObserver();
-                } catch (e) {
-                    console.error('Failed to load data', e);
-                    document.getElementById('grid').innerHTML = '<div class="empty-state"><p>⚠️ Failed to load data. Open via a local server or file server.</p></div>';
+                this.db.orgs.forEach(o => this.enrich(o));
+                this.db.orgs.forEach(o => this.byName.set(o.name, o));
+
+                if (!this.db.orgs.length) {
+                    $('hero-lede').textContent = 'The collection could not be loaded.';
+                    $('result-count').textContent = 'No data';
+                    $('grid').innerHTML = `<div class="empty"><h3>The animal data did not load</h3>
+                        <p>Anidex reads its entries from <code>assets/Organisms.json</code>. If you opened this page straight from a folder (file://), your browser blocks that request. Serve the folder over http instead, for example with <code>python -m http.server</code>, then reload.</p></div>`;
+                    return;
                 }
+
+                this.populateFilters();
+                this.buildClassIndex();
+                this.filter();
+                this.setupObserver();
+                this.bindEvents();
+                this.syncFromHash();
             },
-            playCry(cryId) {
-                const id = (cryId || 'default').toLowerCase().replace(/[^a-z0-9_]/g, '');
-                const audio = new Audio(`assets/audio/cries/${id}.mp3`);
-                audio.play().catch(() => {
-                    new Audio('assets/audio/cries/default.mp3').play()
-                        .catch(e => console.error('Cry audio not found:', e));
+
+            enrich(o) {
+                const cls = tcase(o.class || o.animal_class);
+                const ord = tcase(o.order), fam = tcase(o.family), sub = tcase(o.subfamily);
+                const sci = String(o.scientific_name || '').trim();
+                const words = sci.split(/\s+/).filter(Boolean);
+                const gen = NONE.test(words[0] || '') ? '' : tcase(words[0]);
+                const c = classInfo(cls);
+                o._t = {
+                    cls, ord, fam, sub, gen, sci,
+                    epithet: (words[1] || '').toLowerCase(),
+                    cKey: c.key, cCommon: c.common, cRank: c.rank, oRank: orderRank(c.key, ord)
+                };
+                o._name = displayName(o.name);
+                o._bst = (o.health || 0) + (o.attack || 0) + (o.defense || 0) + (o.power || 0) + (o.resistance || 0) + (o.speed || 0);
+                o._hay = [o._name, o.name, sci, o.abilities, cls, c.common, ord, fam, sub, o.habitat, o.diet].join(' ').toLowerCase();
+            },
+
+            bindEvents() {
+                $('modal-content').addEventListener('click', e => {
+                    const b = e.target.closest('[data-act]');
+                    if (!b) return;
+                    const d = b.dataset;
+                    if (d.act === 'taxon') {
+                        this.closeModal();
+                        this.goTaxon({ cls: d.cls, ord: d.ord, fam: d.fam, sub: d.sub, gen: d.gen });
+                    } else if (d.act === 'cry') this.playCry(d.cry);
+                    else if (d.act === 'move') this.showMoveDetail(d.move);
+                    else if (d.act === 'close-move') $('modal-content').parentElement.querySelector('.dialog-scrim')?.remove();
+                });
+                $('modal-content').addEventListener('keydown', e => {
+                    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr[data-move]')) { e.preventDefault(); this.showMoveDetail(e.target.dataset.move); }
+                });
+                window.addEventListener('hashchange', () => this.syncFromHash());
+                window.addEventListener('popstate', () => this.syncFromHash());
+                document.addEventListener('keydown', e => {
+                    if (e.key === 'Escape') {
+                        const dlg = document.querySelector('.sheet .dialog-scrim');
+                        if (dlg) { dlg.remove(); return; }
+                        if ($('search-selector-modal').classList.contains('open')) { this.closeSearchSelector(); return; }
+                        if ($('modal').classList.contains('open')) { this.closeModal(); return; }
+                        if ($('sidebar').classList.contains('open')) { this.toggleFilter(); }
+                    } else if (e.key === '/' && !e.target.closest('input, select, textarea') && !e.metaKey && !e.ctrlKey) {
+                        e.preventDefault();
+                        $('q').focus();
+                    }
                 });
             },
+
+            /* ---------- Filters ---------- */
             populateFilters() {
                 const orgs = this.db.orgs;
-
-                // Biomes
-                const biomes = [...new Set(orgs.flatMap(o => (o.habitat || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
-                this._populate('flt-biome', biomes);
-
-                // Categories (types)
-                const cats = [...new Set(orgs.flatMap(o => (o.category || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
+                const uniq = fn => [...new Set(orgs.flatMap(fn))].sort((a, b) => a.localeCompare(b));
+                this._populate('flt-biome', uniq(o => splitList(o.habitat)));
+                const cats = uniq(o => splitList(o.category));
                 this._populate('flt-cat1', cats);
                 this._populate('flt-cat2', cats);
+                this._populate('flt-ability', uniq(o => splitList(o.abilities)));
+                this._populate('flt-move', uniq(o => splitList(o.moves)));
+                this._populate('flt-drop', uniq(o => splitList(o.drops)));
+                this._populate('flt-diet', [...new Set(orgs.map(o => o.diet).filter(v => v && !NONE.test(v)))].sort((a, b) => a.localeCompare(b)));
+                this._populate('flt-item-cat', [...new Set(this.db.items.map(i => i.category || '').filter(Boolean))].sort());
 
-                // Abilities
-                const abilities = [...new Set(orgs.flatMap(o => (o.abilities || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
-                this._populate('flt-ability', abilities);
-
-                // Moves
-                const moves = [...new Set(orgs.flatMap(o => (o.moves || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
-                this._populate('flt-move', moves);
-
-                // Drops
-                const drops = [...new Set(orgs.flatMap(o => (o.drops || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
-                this._populate('flt-drop', drops);
-
-                // Classes
-                const classes = [...new Set(orgs.map(o => o.class || o.animal_class).filter(Boolean))].sort();
-                this._populate('flt-class', classes);
-
-                // Diets
-                const diets = [...new Set(orgs.map(o => o.diet).filter(Boolean))].sort();
-                this._populate('flt-diet', diets);
-
-                // Item categories
-                const itemCats = [...new Set(this.db.items.map(i => i.category || '').filter(Boolean))].sort();
-                this._populate('flt-item-cat', itemCats);
-            },
-
-            _populate(id, values) {
-                const sel = document.getElementById(id);
-                if (!sel) return;
-                const defaultOpt = sel.options[0].text;
-                const defaultVal = sel.options[0].value;
-                sel.innerHTML = `<option value="${defaultVal}">${defaultOpt}</option>`;
-                values.forEach(v => {
+                // Classes, in encyclopedia order rather than alphabetical order.
+                const sel = $('flt-class');
+                this.classList().forEach(c => {
                     const opt = document.createElement('option');
-                    opt.value = v;
-                    opt.textContent = v.toUpperCase();
+                    opt.value = c.cls;
+                    opt.textContent = c.common ? `${c.cls} (${c.common.toLowerCase()})` : c.cls;
                     sel.appendChild(opt);
                 });
             },
 
+            _populate(id, values) {
+                const sel = $(id);
+                if (!sel) return;
+                const first = sel.options[0];
+                sel.innerHTML = '';
+                sel.appendChild(first);
+                values.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = sentence(v);
+                    sel.appendChild(opt);
+                });
+            },
+
+            classList() {
+                const map = new Map();
+                this.db.orgs.forEach(o => {
+                    const t = o._t;
+                    if (!t.cls) return;
+                    const e = map.get(t.cls) || { cls: t.cls, count: 0, rank: t.cRank, common: t.cCommon };
+                    e.count++;
+                    map.set(t.cls, e);
+                });
+                return [...map.values()].sort((a, b) => a.rank - b.rank || a.cls.localeCompare(b.cls));
+            },
+
+            buildClassIndex() {
+                const list = this.classList();
+                const total = this.db.orgs.length;
+                $('hero-lede').textContent = `${nf(total)} species in ${nf(list.length)} ${list.length === 1 ? 'class' : 'classes'}, arranged by scientific classification. Choose a group below, or search by name.`;
+                const host = $('class-index');
+                host.innerHTML = '';
+                const mk = (label, count, cls, title) => {
+                    const b = document.createElement('button');
+                    b.className = 'class-tab';
+                    b.type = 'button';
+                    b.setAttribute('role', 'tab');
+                    b.dataset.cls = cls;
+                    if (title) b.title = title;
+                    b.innerHTML = `${esc(label)} <span class="tab-count">${nf(count)}</span>`;
+                    b.onclick = () => this.goTaxon({ cls });
+                    host.appendChild(b);
+                };
+                mk('All animals', total, '');
+                list.forEach(c => mk(c.common || c.cls, c.count, c.cls, c.common ? `${c.cls} (${c.common.toLowerCase()})` : c.cls));
+                this.updateTabs();
+            },
+
+            updateTabs() {
+                const cur = $('flt-class').value;
+                document.querySelectorAll('.class-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.cls === cur)));
+            },
+
             onClassChange() {
-                document.getElementById('flt-order').value = '';
-                document.getElementById('trigger-order').textContent = 'All Orders';
-                document.getElementById('flt-family').value = '';
-                document.getElementById('trigger-family').textContent = 'All Families';
-                document.getElementById('flt-subfamily').value = '';
-                document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
-                document.getElementById('flt-genus').value = '';
-                document.getElementById('trigger-genus').textContent = 'All Genus';
+                ['order', 'family', 'subfamily', 'genus'].forEach(k => this.setPicker(k, ''));
                 this.filter();
+            },
+
+            setPicker(type, val) {
+                $('flt-' + type).value = val || '';
+                $('trigger-' + type).textContent = val || PICKER_ALL[type];
+            },
+
+            // Jump to a place in the classification tree (used by tabs, headings, crumbs, related species).
+            goTaxon({ cls = '', ord = '', fam = '', sub = '', gen = '' } = {}) {
+                if (this.mode !== 'animals') this.setMode('animals', true);
+                $('q').value = '';
+                $('flt-class').value = cls;
+                this.setPicker('order', ord);
+                this.setPicker('family', fam);
+                this.setPicker('subfamily', sub);
+                this.setPicker('genus', gen);
+                if (this.sortBy !== 'taxonomy') this.setSort('taxonomy', true);
+                this.filter();
+                const bar = document.querySelector('.toolbar');
+                const top = bar.getBoundingClientRect().top + window.scrollY - (window.innerWidth > 900 ? 84 : 12);
+                if (window.scrollY > top) window.scrollTo({ top, behavior: reduceMotion() ? 'auto' : 'smooth' });
             },
 
             filter() {
                 if (this.mode === 'items') { this.filterItems(); return; }
-                const q = document.getElementById('q').value.toLowerCase();
-                const biome = document.getElementById('flt-biome').value;
-                const cat1 = document.getElementById('flt-cat1').value;
-                const cat2 = document.getElementById('flt-cat2').value;
-                const rarity = document.getElementById('flt-rarity').value;
-                const ability = document.getElementById('flt-ability').value;
-                const move = document.getElementById('flt-move').value;
-                const drop = document.getElementById('flt-drop').value;
-                const aClass = document.getElementById('flt-class').value;
-                const aOrder = document.getElementById('flt-order').value;
-                const aFamily = document.getElementById('flt-family').value;
-                const aSubfamily = document.getElementById('flt-subfamily').value;
-                const aGenus = document.getElementById('flt-genus').value;
-                const aDiet = document.getElementById('flt-diet').value;
-                const weight = document.getElementById('flt-weight').value;
-                const sizeVal = document.getElementById('flt-size').value;
-                const robustnessVal = document.getElementById('flt-robustness').value;
-                const bstVal = document.getElementById('flt-bst').value;
-                const excludeMythical = document.getElementById('chk-exclude-mythical').checked;
+                const v = id => $(id).value;
+                const q = v('q').trim().toLowerCase();
+                const biome = v('flt-biome'), cat1 = v('flt-cat1'), cat2 = v('flt-cat2'), rarity = v('flt-rarity');
+                const ability = v('flt-ability'), move = v('flt-move'), drop = v('flt-drop');
+                const aClass = v('flt-class'), aOrder = v('flt-order'), aFamily = v('flt-family'), aSub = v('flt-subfamily'), aGenus = v('flt-genus');
+                const aDiet = v('flt-diet'), weight = v('flt-weight'), sizeVal = v('flt-size'), robVal = v('flt-robustness'), bstVal = v('flt-bst');
+                const exMyth = $('chk-exclude-mythical').checked;
+
+                const band = (x, b, cuts) => {
+                    if (b === 'tiny') return x < cuts[0];
+                    if (b === 'small') return x >= cuts[0] && x < cuts[1];
+                    if (b === 'medium') return x >= cuts[1] && x < cuts[2];
+                    if (b === 'large') return x >= cuts[2] && x < cuts[3];
+                    if (b === 'huge') return x >= cuts[3];
+                    return true;
+                };
 
                 this.filtered = this.db.orgs.filter(o => {
-                    if (q && !o.name.toLowerCase().includes(q) &&
-                        !(o.scientific_name || '').toLowerCase().includes(q) &&
-                        !(o.abilities || '').toLowerCase().includes(q)) return false;
+                    const t = o._t;
+                    if (q && !o._hay.includes(q)) return false;
+                    if (aClass && t.cls !== aClass) return false;
+                    if (aOrder && t.ord !== aOrder) return false;
+                    if (aFamily && t.fam !== aFamily) return false;
+                    if (aSub && t.sub !== aSub) return false;
+                    if (aGenus && t.gen !== aGenus) return false;
                     if (biome && !(o.habitat || '').includes(biome)) return false;
                     if (cat1 && !(o.category || '').toUpperCase().includes(cat1.toUpperCase())) return false;
                     if (cat2 && !(o.category || '').toUpperCase().includes(cat2.toUpperCase())) return false;
@@ -457,748 +810,764 @@
                     if (ability && !(o.abilities || '').includes(ability)) return false;
                     if (move && !(o.moves || '').includes(move)) return false;
                     if (drop && !(o.drops || '').includes(drop)) return false;
-                    if (aClass && (o.class || o.animal_class) !== aClass) return false;
-                    if (aOrder && o.order !== aOrder) return false;
-                    if (aFamily && o.family !== aFamily) return false;
-                    if (aSubfamily && o.subfamily !== aSubfamily) return false;
-                    if (aGenus && (o.scientific_name || '').split(' ')[0] !== aGenus) return false;
                     if (aDiet && o.diet !== aDiet) return false;
-                    if (excludeMythical && (o.rarity || '').toLowerCase() === 'mythical') return false;
-                    if (weight) {
-                        const w = parseFloat(o.weight) || 0;
-                        if (weight === 'tiny' && w >= 1) return false;
-                        if (weight === 'small' && (w < 1 || w >= 10)) return false;
-                        if (weight === 'medium' && (w < 10 || w >= 50)) return false;
-                        if (weight === 'large' && (w < 50 || w >= 100)) return false;
-                        if (weight === 'huge' && w < 100) return false;
-                    }
-                    if (sizeVal) {
-                        const s = parseFloat(o.size) || 0;
-                        if (sizeVal === 'tiny' && s >= 0.5) return false;
-                        if (sizeVal === 'small' && (s < 0.5 || s >= 2)) return false;
-                        if (sizeVal === 'medium' && (s < 2 || s >= 5)) return false;
-                        if (sizeVal === 'large' && (s < 5 || s >= 10)) return false;
-                        if (sizeVal === 'huge' && s < 10) return false;
-                    }
-                    if (robustnessVal) {
-                        const r = (parseFloat(o.weight) || 0) / (parseFloat(o.size) || 1);
-                        if (robustnessVal === 'tiny' && r >= 1) return false;
-                        if (robustnessVal === 'small' && (r < 1 || r >= 10)) return false;
-                        if (robustnessVal === 'medium' && (r < 10 || r >= 50)) return false;
-                        if (robustnessVal === 'large' && (r < 50 || r >= 100)) return false;
-                        if (robustnessVal === 'huge' && r < 100) return false;
-                    }
+                    if (exMyth && (o.rarity || '').toLowerCase() === 'mythical') return false;
+                    if (weight && !band(parseFloat(o.weight) || 0, weight, [1, 10, 50, 100])) return false;
+                    if (sizeVal && !band(parseFloat(o.size) || 0, sizeVal, [0.5, 2, 5, 10])) return false;
+                    if (robVal && !band(this.robustness(o), robVal, [1, 10, 50, 100])) return false;
                     if (bstVal) {
-                        const bst = (o.health || 0) + (o.attack || 0) + (o.defense || 0) + (o.power || 0) + (o.resistance || 0) + (o.speed || 0);
-                        if (bstVal === 'vlow' && bst >= 300) return false;
-                        if (bstVal === 'low' && (bst < 300 || bst >= 450)) return false;
-                        if (bstVal === 'med' && (bst < 450 || bst >= 550)) return false;
-                        if (bstVal === 'high' && (bst < 550 || bst >= 650)) return false;
-                        if (bstVal === 'vhigh' && bst < 650) return false;
+                        const b = o._bst;
+                        if (bstVal === 'vlow' && b >= 300) return false;
+                        if (bstVal === 'low' && (b < 300 || b >= 450)) return false;
+                        if (bstVal === 'med' && (b < 450 || b >= 550)) return false;
+                        if (bstVal === 'high' && (b < 550 || b >= 650)) return false;
+                        if (bstVal === 'vhigh' && b < 650) return false;
                     }
                     return true;
                 });
 
-                // Sort
                 this.filtered.sort((a, b) => {
-                    if (this.sortBy === 'weight' || this.sortBy === 'size' || this.sortBy === 'bst' || this.sortBy === 'health' || this.sortBy === 'attack' || this.sortBy === 'defense' || this.sortBy === 'power' || this.sortBy === 'resistance' || this.sortBy === 'speed' || this.sortBy === 'robustness') {
-                        let va, vb;
-                        if (this.sortBy === 'robustness') {
-                            va = (parseFloat(a.weight) || 0) / (parseFloat(a.size) || 1);
-                            vb = (parseFloat(b.weight) || 0) / (parseFloat(b.size) || 1);
-                        } else if (this.sortBy === 'bst') {
-                            va = (a.health || 0) + (a.attack || 0) + (a.defense || 0) + (a.power || 0) + (a.resistance || 0) + (a.speed || 0);
-                            vb = (b.health || 0) + (b.attack || 0) + (b.defense || 0) + (b.power || 0) + (b.resistance || 0) + (b.speed || 0);
-                        } else {
-                            va = parseFloat(a[this.sortBy]) || 0;
-                            vb = parseFloat(b[this.sortBy]) || 0;
-                        }
-                        return this.ascending ? va - vb : vb - va;
-                    }
-                    if (this.sortBy === 'taxonomy') {
-                        const ca = (a.class || a.animal_class || '').localeCompare(b.class || b.animal_class || '');
-                        if (ca !== 0) return this.ascending ? ca : -ca;
-                        const oa = (a.order || '').localeCompare(b.order || '');
-                        if (oa !== 0) return this.ascending ? oa : -oa;
-                        const fa = (a.family || '').localeCompare(b.family || '');
-                        if (fa !== 0) return this.ascending ? fa : -fa;
-                        const sa = (a.subfamily || '').localeCompare(b.subfamily || '');
-                        if (sa !== 0) return this.ascending ? sa : -sa;
-                        const g1 = (a.scientific_name || '').split(' ')[0];
-                        const g2 = (b.scientific_name || '').split(' ')[0];
-                        const ga = g1.localeCompare(g2);
-                        if (ga !== 0) return this.ascending ? ga : -ga;
-                        const na = (a.name || '').localeCompare(b.name || '');
-                        return this.ascending ? na : -na;
-                    }
-                    return this.ascending ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '');
+                    let r;
+                    if (this.sortBy === 'taxonomy') r = this.taxCompare(a, b);
+                    else if (this.sortBy === 'name') r = a._name.localeCompare(b._name);
+                    else r = this.sortValue(a) - this.sortValue(b) || this.taxCompare(a, b);
+                    return this.ascending ? r : -r;
+                });
+
+                // Counts for group headings
+                const inc = (m, k) => m.set(k, (m.get(k) || 0) + 1);
+                this.counts = { c: new Map(), o: new Map(), f: new Map() };
+                this.filtered.forEach(o => {
+                    const t = o._t;
+                    inc(this.counts.c, t.cls);
+                    inc(this.counts.o, t.cls + '|' + t.ord);
+                    inc(this.counts.f, t.cls + '|' + t.ord + '|' + t.fam);
                 });
 
                 this.displayedCount = 0;
-                document.getElementById('grid').innerHTML = '';
-                document.getElementById('result-count').textContent = `${this.filtered.length} ANIMALS FOUND`;
-                this.renderMore();
-            },
-
-            filterItems() {
-                const q = document.getElementById('q').value.toLowerCase();
-                const cat = document.getElementById('flt-item-cat').value;
-
-                const items = this.db.items.filter(i => {
-                    if (q && !i.name.toLowerCase().includes(q) && !(i.category || '').toLowerCase().includes(q)) return false;
-                    if (cat && (i.category || '') !== cat) return false;
-                    return true;
-                });
-
-                const grid = document.getElementById('grid');
+                this.last = { cls: null, ord: null, fam: null };
+                const grid = $('grid');
                 grid.innerHTML = '';
-                document.getElementById('result-count').textContent = `${items.length} ITEMS FOUND`;
+                grid.classList.toggle('is-list', this.view === 'list');
+                this.renderChrome();
 
-                items.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'card item-card';
-                    card.onclick = () => this.showItemDetail(item);
-                    const imgSrc = `assets/items/${(item.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.png`;
-                    card.innerHTML = `
-                    <div class="card-sprite-wrap item-sprite-wrap">
-                        <img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                        <div class="sprite-fallback" style="display:none">📦</div>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-name">${(item.name || '').replace(/_/g, ' ').toUpperCase()}</div>
-                        <div class="card-sub">${item.price ? item.price + 'G' : ''}</div>
-                    </div>`;
-                    grid.appendChild(card);
-                });
+                if (!this.filtered.length) {
+                    grid.innerHTML = `<div class="empty"><h3>No animals match these filters</h3>
+                        <p>Try removing a filter or searching for a different name. Classification filters narrow one another, so clearing the class often helps.</p>
+                        <button class="btn btn-primary" id="empty-clear">Clear all filters</button></div>`;
+                    $('empty-clear').onclick = () => this.reset();
+                    $('loading-more').style.display = 'none';
+                    return;
+                }
+                this.renderMore();
+                this.fillViewport();
             },
 
+            taxCompare(a, b) {
+                const x = a._t, y = b._t;
+                return (x.cRank - y.cRank) || cmpStr(x.cls, y.cls)
+                    || (x.oRank - y.oRank) || cmpStr(x.ord, y.ord)
+                    || cmpStr(x.fam, y.fam) || cmpStr(x.sub, y.sub) || cmpStr(x.gen, y.gen)
+                    || cmpStr(x.epithet, y.epithet) || a._name.localeCompare(b._name);
+            },
+
+            robustness(o) { return (parseFloat(o.weight) || 0) / (parseFloat(o.size) || 1); },
+
+            sortValue(o) {
+                switch (this.sortBy) {
+                    case 'robustness': return this.robustness(o);
+                    case 'bst': return o._bst;
+                    default: return parseFloat(o[this.sortBy]) || 0;
+                }
+            },
+
+            sortMeta(o) {
+                switch (this.sortBy) {
+                    case 'weight': return this.fmtWeight(o.weight);
+                    case 'size': return this.fmtSize(o.size);
+                    case 'robustness': return `${this.robustness(o).toFixed(2)} λ`;
+                    case 'bst': return `Total ${o._bst}`;
+                    case 'health': case 'attack': case 'defense': case 'power': case 'resistance': case 'speed':
+                        return `${sentence(this.sortBy)} ${o[this.sortBy] || 0}`;
+                    case 'name': return o._t.fam;
+                    default: return '';
+                }
+            },
+
+            /* ---------- Toolbar chrome: breadcrumb, count, active chips ---------- */
+            renderChrome() {
+                const total = this.mode === 'items' ? this.db.items.length : this.db.orgs.length;
+                const chips = this.activeFilters();
+                const noun = this.mode === 'items' ? 'items' : 'species';
+                const shown = this.mode === 'items' ? this.itemsShown : this.filtered.length;
+                $('result-count').innerHTML = chips.length
+                    ? `${nf(shown)} ${shown === 1 && noun === 'species' ? 'species' : noun}<small>of ${nf(total)}</small>`
+                    : `${nf(total)} ${noun}`;
+
+                // Active filter chips
+                const host = $('active-filters');
+                host.innerHTML = '';
+                chips.forEach(c => {
+                    const b = document.createElement('button');
+                    b.className = 'chip-x';
+                    b.type = 'button';
+                    b.setAttribute('aria-label', `Remove filter ${c.label}: ${c.text}`);
+                    b.innerHTML = `<span>${esc(c.label)}: <b>${esc(c.text)}</b></span><span class="x" aria-hidden="true">✕</span>`;
+                    b.onclick = c.clear;
+                    host.appendChild(b);
+                });
+                if (chips.length > 1) {
+                    const b = document.createElement('button');
+                    b.className = 'link-btn';
+                    b.textContent = 'Clear all';
+                    b.onclick = () => this.reset();
+                    host.appendChild(b);
+                }
+                $('filter-count').textContent = chips.length ? ` (${chips.length})` : '';
+
+                // Breadcrumb
+                const crumbs = [];
+                const vals = { class: $('flt-class').value, order: $('flt-order').value, family: $('flt-family').value, subfamily: $('flt-subfamily').value, genus: $('flt-genus').value };
+                const keys = { class: 'cls', order: 'ord', family: 'fam', subfamily: 'sub', genus: 'gen' };
+                const acc = {};
+                TAX_CHAIN.forEach(k => { if (vals[k]) { acc[keys[k]] = vals[k]; crumbs.push({ label: vals[k], to: { ...acc } }); } });
+                const nav = $('breadcrumb');
+                nav.innerHTML = '';
+                const ol = document.createElement('ol');
+                const li = (label, to, current) => {
+                    const el = document.createElement('li');
+                    if (current) { el.innerHTML = `<span aria-current="page">${esc(label)}</span>`; }
+                    else { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.onclick = () => this.goTaxon(to); el.appendChild(b); }
+                    ol.appendChild(el);
+                };
+                li('All animals', {}, !crumbs.length);
+                crumbs.forEach((c, i) => li(c.label, c.to, i === crumbs.length - 1));
+                nav.appendChild(ol);
+
+                this.updateTabs();
+            },
+
+            activeFilters() {
+                const chips = [];
+                const q = $('q').value.trim();
+                if (q) chips.push({ label: 'Search', text: q, clear: () => { $('q').value = ''; this.filter(); } });
+                if (this.mode === 'items') {
+                    const el = $('flt-item-cat');
+                    if (el.value) chips.push({ label: 'Category', text: el.selectedOptions[0].text, clear: () => { el.selectedIndex = 0; this.filterItems(); } });
+                    return chips;
+                }
+                FILTER_DEFS.forEach(([id, label]) => {
+                    const el = $(id);
+                    if (!el || !el.value) return;
+                    const text = el.tagName === 'SELECT' ? el.selectedOptions[0].text : el.value;
+                    chips.push({ label, text, clear: () => this.clearFilter(id) });
+                });
+                if ($('chk-exclude-mythical').checked) chips.push({ label: 'Excluding', text: 'mythical', clear: () => { $('chk-exclude-mythical').checked = false; this.filter(); } });
+                return chips;
+            },
+
+            clearFilter(id) {
+                const name = id.replace('flt-', '');
+                const i = TAX_CHAIN.indexOf(name);
+                if (i >= 0) {
+                    TAX_CHAIN.slice(i).forEach(k => k === 'class' ? ($('flt-class').value = '') : this.setPicker(k, ''));
+                } else {
+                    const el = $(id);
+                    if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = '';
+                }
+                this.filter();
+            },
+
+            /* ---------- Rendering results ---------- */
             renderMore() {
                 const slice = this.filtered.slice(this.displayedCount, this.displayedCount + this.batchSize);
-                const grid = document.getElementById('grid');
+                const frag = document.createDocumentFragment();
                 slice.forEach(org => {
-                    grid.appendChild(this.buildAnimalCard(org));
+                    if (this.sortBy === 'taxonomy') this.headings(org, frag);
+                    frag.appendChild(this.view === 'list' ? this.buildRow(org) : this.buildAnimalCard(org));
                 });
+                $('grid').appendChild(frag);
                 this.displayedCount += slice.length;
-                document.getElementById('loading-more').style.display =
-                    this.displayedCount < this.filtered.length ? 'flex' : 'none';
+                $('loading-more').style.display = this.displayedCount < this.filtered.length ? 'flex' : 'none';
+            },
+
+            // Keep loading while the sentinel is still on screen (tall screens, short batches).
+            fillViewport() {
+                if (this.mode !== 'animals' || this.displayedCount >= this.filtered.length) return;
+                const r = $('sentinel').getBoundingClientRect();
+                if (r.top < window.innerHeight + 300) {
+                    this.renderMore();
+                    setTimeout(() => this.fillViewport(), 0);
+                }
+            },
+
+            headings(org, frag) {
+                const t = org._t, L = this.last;
+                if (t.cls !== L.cls) {
+                    frag.appendChild(this.headEl('class', t.cls || 'Unclassified', this.counts.c.get(t.cls), t.cCommon, { cls: t.cls }));
+                    L.cls = t.cls; L.ord = null; L.fam = null;
+                }
+                if (t.ord !== L.ord) {
+                    if (t.ord) frag.appendChild(this.headEl('order', t.ord, this.counts.o.get(t.cls + '|' + t.ord), '', { cls: t.cls, ord: t.ord }));
+                    L.ord = t.ord; L.fam = null;
+                }
+                if (t.fam !== L.fam) {
+                    if (t.fam) frag.appendChild(this.headEl('family', t.fam, this.counts.f.get(t.cls + '|' + t.ord + '|' + t.fam), '', { cls: t.cls, ord: t.ord, fam: t.fam }));
+                    L.fam = t.fam;
+                }
+            },
+
+            headEl(level, title, count, common, to) {
+                const h = document.createElement('div');
+                h.className = 'tax-head is-' + level;
+                const tag = level === 'class' ? 'h2' : level === 'order' ? 'h3' : 'h4';
+                const rank = level === 'class' ? 'Class' : level === 'order' ? 'Order' : 'Family';
+                h.innerHTML = `<${tag} class="tax-title"><button type="button" class="tax-link" title="Show only ${esc(title)}"><span class="tax-rank">${rank}</span><span class="tax-name">${esc(title)}</span></button></${tag}>
+                    ${common ? `<span class="tax-common">${esc(common)}</span>` : ''}
+                    <span class="tax-count">${nf(count || 0)} ${count === 1 ? 'species' : 'species'}</span>`;
+                if (title !== 'Unclassified') h.querySelector('button').onclick = () => this.goTaxon(to);
+                return h;
+            },
+
+            hashFor(name) { return '#/species/' + encodeURIComponent(name); },
+
+            plateHTML(kind, key, initial) {
+                return `<div class="plate" data-${kind}="${esc(key)}"><div class="plate-fallback" aria-hidden="true">${esc(initial)}</div></div>`;
+            },
+
+            mountPlates(root) {
+                root.querySelectorAll('[data-org]').forEach(w => {
+                    const o = this.byName.get(w.dataset.org);
+                    if (o) Sprites.mount(w, Sprites.forOrg(o), o._name, o.name, w.dataset.eager === '1');
+                });
+                root.querySelectorAll('[data-item]').forEach(w => {
+                    const it = this.db.items.find(x => x.name === w.dataset.item);
+                    if (it) Sprites.mount(w, Sprites.forItem(it), this.itemName(it), 'item:' + it.name);
+                });
             },
 
             buildAnimalCard(org) {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.onclick = () => this.showDetail(org.name);
+                const t = org._t;
+                const a = document.createElement('a');
+                a.className = 'plate-card';
+                a.href = this.hashFor(org.name);
+                a.innerHTML = `${this.plateHTML('org', org.name, org._name.charAt(0))}
+                    <div class="plate-card-name">${esc(org._name)}</div>
+                    <div class="plate-card-sci">${esc(t.sci || 'Species not recorded')}</div>
+                    <div class="plate-card-meta">${esc(this.sortBy === 'taxonomy' ? '' : this.sortMeta(org))}</div>`;
+                this.mountPlates(a);
+                return a;
+            },
 
-                const spriteSrc = this.getSpritePath(org);
-                const rarity = (org.rarity || 'common').toLowerCase();
-                const rarityColor = this.rarityColor(rarity);
-                const types = (org.category || 'basic').split(',').map(s => s.trim()).filter(Boolean);
-                const aClass = (org.class || org.animal_class || 'Unknown').toLowerCase().replace(/ /g, '_');
-                const aDiet = (org.diet || 'Unknown').toLowerCase().replace(/ /g, '_');
-
-                card.innerHTML = `
-                <div class="card-inner">
-                    <div class="card-sprite-wrap" style="background-image: url('${this.rarityBackground(rarity)}'); background-size: cover; background-position: center;">
-                        <div class="card-sprite-overlay" style="background: radial-gradient(circle at center, ${rarityColor}22 0%, transparent 70%);"></div>
-                        <img src="${spriteSrc}" alt="${org.name}"
-                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                        <div class="sprite-fallback" style="display:none">🦎</div>
-                        <div class="card-type-row">
-                            ${types.slice(0, 2).map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>` }).join('')}
-                        </div>
-                        <div class="card-class-row" style="position: absolute; bottom: 10px; right: 10px; display: flex; gap: 6px; z-index: 3;">
-                            <span class="type-badge" title="${(org.class || org.animal_class || 'Unknown').toUpperCase()}"><img src="assets/icon/${aClass}.png" class="type-icon" alt="${aClass}" onerror="this.src='assets/icon/unknown.png'; this.style.display='none'"></span>
-                            <span class="type-badge" title="${(org.diet || 'Unknown').toUpperCase()}"><img src="assets/icon/${aDiet}.png" class="type-icon" alt="${aDiet}" onerror="this.src='assets/icon/unknown.png'; this.style.display='none'"></span>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="card-name">${org.name.toUpperCase()}</div>
-                        <div class="card-sub">${org.scientific_name || 'Unknown Species'}</div>
-                    </div>
-                </div>`;
-                return card;
+            buildRow(org) {
+                const t = org._t;
+                const rc = this.rarityColor((org.rarity || 'common').toLowerCase());
+                const a = document.createElement('a');
+                a.className = 'row';
+                a.href = this.hashFor(org.name);
+                const extra = this.sortBy === 'taxonomy' ? t.gen : this.sortBy === 'name' ? t.fam : this.sortMeta(org);
+                a.innerHTML = `${this.plateHTML('org', org.name, org._name.charAt(0))}
+                    <div><div class="row-name">${esc(org._name)}</div><div class="row-sci">${esc(t.sci || '')}</div></div>
+                    <div class="row-cell row-family">${esc(extra)}</div>
+                    <div class="row-cell row-class">${esc(t.cCommon || t.cls)}</div>
+                    <div class="row-rarity" style="color:var(--ink-2)"><span class="rarity-dot" style="background:${rc}"></span>${esc(sentence(org.rarity || 'common'))}</div>`;
+                this.mountPlates(a);
+                return a;
             },
 
             setupObserver() {
                 this.observer = new IntersectionObserver(entries => {
-                    if (entries[0].isIntersecting && this.mode === 'animals') {
-                        this.renderMore();
+                    if (entries[0].isIntersecting && this.mode === 'animals') { this.renderMore(); this.fillViewport(); }
+                }, { rootMargin: '300px' });
+                this.observer.observe($('sentinel'));
+            },
+
+            /* ---------- Items ---------- */
+            itemName(i) { return displayName(i.name); },
+
+            filterItems() {
+                const q = $('q').value.trim().toLowerCase();
+                const cat = $('flt-item-cat').value;
+                const items = this.db.items.filter(i => {
+                    if (q && !String(i.name || '').toLowerCase().includes(q) && !(i.category || '').toLowerCase().includes(q)) return false;
+                    if (cat && (i.category || '') !== cat) return false;
+                    return true;
+                });
+                this.itemsShown = items.length;
+                const grid = $('grid');
+                grid.innerHTML = '';
+                grid.classList.remove('is-list');
+                this.renderChrome();
+                $('loading-more').style.display = 'none';
+                if (!items.length) {
+                    grid.innerHTML = `<div class="empty"><h3>No items match</h3><p>Try a different search or clear the category.</p></div>`;
+                    return;
+                }
+                items.forEach(item => {
+                    const a = document.createElement('a');
+                    a.className = 'plate-card';
+                    a.href = '#/item/' + encodeURIComponent(item.name);
+                    a.innerHTML = `${this.plateHTML('item', item.name, this.itemName(item).charAt(0))}
+                        <div class="plate-card-name">${esc(this.itemName(item))}</div>
+                        <div class="plate-card-sci" style="font-style:normal">${esc(sentence(item.category || 'Item'))}</div>
+                        <div class="plate-card-meta">${item.price ? esc(item.price) + ' gold' : ''}</div>`;
+                    this.mountPlates(a);
+                    grid.appendChild(a);
+                });
+            },
+
+            /* ---------- Colours & formatting ---------- */
+            rarityColor(r) {
+                return ({ common: '#7b8794', uncommon: '#3a8a5c', rare: '#2f6fb0', epic: '#8a55b0', legendary: '#c77d1a', mythical: '#c04a86' })[r] || '#7b8794';
+            },
+
+            fmtWeight(w) {
+                w = parseFloat(w);
+                if (!isFinite(w) || w <= 0) return 'Unknown';
+                if (this.unitSystem === 'imperial') {
+                    const lb = w * 2.20462;
+                    if (lb >= 2000) return `${sig(lb / 2000)} short tons`;
+                    if (lb >= 1) return `${sig(lb)} lb`;
+                    const oz = lb * 16;
+                    if (oz >= 0.01) return `${sig(oz)} oz`;
+                }
+                if (w >= 1000) return `${sig(w / 1000)} tonnes`;
+                if (w >= 1) return `${sig(w)} kg`;
+                if (w >= 1e-3) return `${sig(w * 1e3)} g`;
+                if (w >= 1e-6) return `${sig(w * 1e6)} mg`;
+                if (w >= 1e-9) return `${sig(w * 1e9)} µg`;
+                return `${sig(w * 1e12)} ng`;
+            },
+
+            fmtSize(s) {
+                s = parseFloat(s);
+                if (!isFinite(s) || s <= 0) return 'Unknown';
+                if (this.unitSystem === 'imperial') {
+                    const inches = s * 39.3701;
+                    if (inches >= 12) {
+                        const ft = Math.floor(inches / 12), rem = Math.round(inches % 12);
+                        return rem === 0 || ft >= 100 ? `${nf(ft)} ft` : `${ft} ft ${rem} in`;
                     }
-                }, { rootMargin: '200px' });
-                this.observer.observe(document.getElementById('sentinel'));
+                    if (inches >= 0.04) return `${sig(inches)} in`;
+                }
+                if (s >= 1000) return `${sig(s / 1000)} km`;
+                if (s >= 1) return `${sig(s)} m`;
+                if (s >= 1e-2) return `${sig(s * 100)} cm`;
+                if (s >= 1e-3) return `${sig(s * 1e3)} mm`;
+                if (s >= 1e-6) return `${sig(s * 1e6)} µm`;
+                return `${sig(s * 1e9)} nm`;
             },
 
-            getSpritePath(org) {
-                let clean = org.name.toLowerCase()
-                    .replace(/[^a-z0-9]/g, '_')
-                    .replace(/_+/g, '_')
-                    .replace(/^_|_$/g, '');
-                return `assets/sprites/${clean}.png`;
+            playCry(cryId) {
+                const id = (cryId || 'default').toLowerCase().replace(/[^a-z0-9_]/g, '');
+                const audio = new Audio(`assets/audio/cries/${id}.mp3`);
+                audio.play().catch(() => {
+                    new Audio('assets/audio/cries/default.mp3').play().catch(e => console.warn('[Anidex] Cry audio not found:', e));
+                });
             },
 
-            rarityColor(rarity) {
-                const map = {
-                    common: '#8b949e', uncommon: '#2ecc71', rare: '#3399ff',
-                    epic: '#aa55cc', legendary: '#ff9933', mythical: '#ff55aa'
-                };
-                return map[rarity] || '#8b949e';
+            /* ---------- Deep links: #/species/Name and #/item/Name ---------- */
+            syncFromHash() {
+                const m = location.hash.match(/^#\/(species|item)\/(.+)$/);
+                if (!m) { if ($('modal').classList.contains('open')) this.closeModal(true); return; }
+                let name;
+                try { name = decodeURIComponent(m[2]); } catch (e) { return; }
+                if (m[1] === 'species') {
+                    const org = this.byName.get(name);
+                    if (org) this.renderDetail(org);
+                } else {
+                    const it = this.db.items.find(x => x.name === name);
+                    if (it) this.renderItemDetail(it);
+                }
             },
 
-            typeColor(type) {
-                const map = {
-                    basic: '#aaaa99', blaze: '#ff4422', aquatic: '#3399ff', grass: '#77cc55',
-                    electric: '#ffcc33', cryo: '#aaddff', martial: '#cc3344', toxic: '#aa55aa',
-                    earth: '#aa8855', flying: '#99ccff', mystic: '#ff66aa', arthropod: '#88aa44',
-                    rock: '#bbaa66', darkness: '#5566aa', spectral: '#9966ff', metal: '#7799aa',
-                    aura: '#44aaaa', sound: '#ff7733', holy: '#ffcc44', drake: '#7744aa'
-                };
-                return map[type.toLowerCase()] || '#888';
+            showDetail(name) {   // public: also used by the bio scanner
+                const h = this.hashFor(name);
+                if (location.hash !== h) location.hash = h; else this.syncFromHash();
             },
 
-            showDetail(name) {
-                const org = this.db.orgs.find(x => x.name === name);
-                if (!org) return;
+            openSheet(html, title, key) {
+                if (this.currentEntry === key && $('modal').classList.contains('open')) return false;
+                if (!$('modal').classList.contains('open')) this.lastFocus = document.activeElement;
+                this.currentEntry = key;
+                const mc = $('modal-content');
+                mc.innerHTML = html;
+                mc.scrollTop = 0;
+                this.mountPlates(mc);
+                document.title = `${title} — Anidex`;
+                $('modal').classList.add('open');
+                this.syncLock();
+                setTimeout(() => $('modal-close').focus({ preventScroll: true }), 30);
+                return true;
+            },
 
+            closeModal(fromHash) {
+                $('modal').classList.remove('open');
+                this.currentEntry = null;
+                document.title = 'Anidex — An Encyclopedia of Animal Life';
+                if (!fromHash && /^#\/(species|item)\//.test(location.hash)) {
+                    history.replaceState(null, '', location.pathname + location.search);
+                }
+                this.syncLock();
+                if (this.lastFocus && document.contains(this.lastFocus)) this.lastFocus.focus({ preventScroll: true });
+            },
+
+            syncLock() {
+                document.body.classList.toggle('is-locked',
+                    !!document.querySelector('.overlay.open') || $('sidebar').classList.contains('open') && window.innerWidth <= 900);
+            },
+
+            taxAttrs(t, level) {
+                const order = ['cls', 'ord', 'fam', 'sub', 'gen'];
+                const upto = order.slice(0, order.indexOf(level) + 1);
+                return upto.map(k => `data-${k}="${esc(t[k])}"`).join(' ');
+            },
+
+            /* ---------- Species entry ---------- */
+            renderDetail(org) {
+                const t = org._t;
                 const rarity = (org.rarity || 'common').toLowerCase();
-                const rarityColor = this.rarityColor(rarity);
-                const types = (org.category || 'basic').split(',').map(s => s.trim()).filter(Boolean);
-                const abilities = (org.abilities || '').split(',').map(s => s.trim()).filter(Boolean);
-                const moves = (org.moves || '').split(',').map(s => s.trim()).filter(Boolean);
-                const drops = (org.drops || '').split(',').map(s => s.trim()).filter(Boolean);
-                const biomes = (org.habitat || '').split(',').map(s => s.trim()).filter(Boolean);
-                const spriteSrc = this.getSpritePath(org);
+                const rc = this.rarityColor(rarity);
+                const cats = splitList(org.category || 'basic');
+                const abilities = splitList(org.abilities);
+                const moves = splitList(org.moves);
+                const drops = splitList(org.drops);
+                const biomes = splitList(org.habitat);
+                const activity = org.active_time || org.activity;
+                const cry = esc(org.cry || 'default');
 
-                const stats = [
-                    { label: 'HEALTH', key: 'health', color: '#e74c3c', icon: '❤', max: 500 },
-                    { label: 'ATTACK', key: 'attack', color: '#e67e22', icon: '⚡', max: 200 },
-                    { label: 'DEFENSE', key: 'defense', color: '#3498db', icon: '🛡', max: 200 },
-                    { label: 'POWER', key: 'power', color: '#9b59b6', icon: '✨', max: 200 },
-                    { label: 'RESISTANCE', key: 'resistance', color: '#1abc9c', icon: '🧠', max: 200 },
-                    { label: 'SPEED', key: 'speed', color: '#f39c12', icon: '💨', max: 200 },
-                ];
+                const crumbItems = [`<li><button data-act="taxon">Animalia</button></li>`];
+                [['cls', 'cls'], ['ord', 'ord'], ['fam', 'fam'], ['sub', 'sub'], ['gen', 'gen']].forEach(([k, lvl]) => {
+                    if (t[k]) crumbItems.push(`<li><button data-act="taxon" ${this.taxAttrs(t, lvl)}>${esc(t[k])}</button></li>`);
+                });
 
-                const statsHTML = stats.map(s => {
-                    const val = org[s.key] || 0;
-                    const pct = Math.min(100, (val / s.max) * 100);
-                    return `<div class="detail-stat-row">
-                    <div class="detail-stat-meta">
-                        <span class="detail-stat-label">${s.icon} ${s.label}</span>
-                        <span class="detail-stat-val" style="color:${s.color}">${val}</span>
-                    </div>
-                    <div class="stat-track">
-                        <div class="stat-bar" style="width:${pct}%;background:${s.color}"></div>
-                    </div>
-                </div>`;
+                const tx = (label, k) => t[k] ? `<tr><th scope="row">${label}</th><td><button data-act="taxon" ${this.taxAttrs(t, k)} title="Browse ${esc(t[k])}">${esc(t[k])}</button></td></tr>` : '';
+                const infobox = `
+                <aside class="infobox" aria-label="Summary">
+                    <figure>
+                        ${`<div class="plate" data-org="${esc(org.name)}" data-eager="1"><div class="plate-fallback" aria-hidden="true">${esc(org._name.charAt(0))}</div></div>`}
+                        <figcaption>${esc(org._name)}${t.sci ? `, <i>${esc(t.sci)}</i>` : ''}</figcaption>
+                    </figure>
+                    <table>
+                        <caption>Scientific classification</caption>
+                        <tbody>
+                            <tr><th scope="row">Kingdom</th><td>Animalia</td></tr>
+                            ${tx('Class', 'cls')}${tx('Order', 'ord')}${tx('Family', 'fam')}${tx('Subfamily', 'sub')}${tx('Genus', 'gen')}
+                            ${t.sci ? `<tr><th scope="row">Species</th><td><i>${esc(t.sci)}</i></td></tr>` : ''}
+                        </tbody>
+                    </table>
+                    <table>
+                        <caption>Quick facts</caption>
+                        <tbody>
+                            <tr><th scope="row">Weight</th><td>${esc(this.fmtWeight(org.weight))}</td></tr>
+                            <tr><th scope="row">Length or height</th><td>${esc(this.fmtSize(org.size))}</td></tr>
+                            <tr><th scope="row">Robustness</th><td>${this.robustness(org).toFixed(2)} λ</td></tr>
+                            <tr><th scope="row">Diet</th><td>${esc(sentence(org.diet && !NONE.test(org.diet) ? org.diet : 'Unknown'))}</td></tr>
+                            <tr><th scope="row">Active</th><td>${esc(sentence(activity && !NONE.test(activity) ? activity : 'Unknown'))}</td></tr>
+                            <tr><th scope="row">Rarity</th><td><span class="rarity-tag"><span class="rarity-dot" style="background:${rc}"></span>${esc(sentence(rarity))}</span></td></tr>
+                            <tr><th scope="row">${cats.length > 1 ? 'Categories' : 'Category'}</th><td><span class="cat-list">${cats.map(c => `<span class="cat"><img src="assets/icon/${esc(slug(c))}.png" alt="" onerror="this.remove()">${esc(sentence(c))}</span>`).join('')}</span></td></tr>
+                        </tbody>
+                    </table>
+                </aside>`;
+
+                const paragraphs = String(org.description || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+                const overview = paragraphs.length
+                    ? paragraphs.map(p => `<p>${esc(p)}</p>`).join('')
+                    : `<p class="muted">No description has been written for this species yet.</p>`;
+
+                const stats = [['Health', 'health', 500], ['Attack', 'attack', 200], ['Defense', 'defense', 200], ['Power', 'power', 200], ['Resistance', 'resistance', 200], ['Speed', 'speed', 200]];
+                const statsHTML = stats.map(([label, key, max]) => {
+                    const val = org[key] || 0;
+                    return `<div class="stat"><span class="stat-label">${label}</span>
+                        <div class="stat-track" role="img" aria-label="${label} ${val} of ${max}"><div class="stat-fill" style="width:${Math.min(100, val / max * 100)}%"></div></div>
+                        <span class="stat-val">${val}</span></div>`;
                 }).join('');
 
-                const abilitiesHTML = abilities.map(aName => {
-                    const ab = this.db.abilities[aName.toLowerCase()] || {};
-                    return `<div class="detail-ability-card">
-                    <div class="ability-name">⚡ ${aName.toUpperCase()}</div>
-                    <div class="ability-desc">${ab.description || 'Passive trait — effects unknown.'}</div>
-                </div>`;
-                }).join('') || '<p class="dim">No abilities listed.</p>';
+                const abilitiesHTML = abilities.length ? `<dl class="defs">${abilities.map(n => {
+                    const ab = this.db.abilities[n.toLowerCase()] || {};
+                    return `<div><dt>${esc(sentence(n))}</dt><dd>${esc(ab.description || 'A passive trait. Its effects have not been documented.')}</dd></div>`;
+                }).join('')}</dl>` : '<p class="dim">No abilities listed.</p>';
 
-                const movesHTML = moves.length ? `
-                <table class="move-table">
-                    <thead>
-                        <tr><th>MOVE</th><th>TYPE</th><th>PWR</th><th>ACC</th><th>PP</th></tr>
-                    </thead>
-                    <tbody>
-                        ${moves.map(mName => {
-                    const md = this.db.moves[mName.toLowerCase()] || {};
-                    const tc = this.typeColor(md.type || 'basic');
-                    return `<tr onclick="App.showMoveDetail('${mName.replace(/'/g, "\\'")}')">
-                                <td class="move-name">${mName}</td>
-                                <td><span class="type-badge type-${(md.type || 'basic').toLowerCase()}" title="${(md.type || 'basic').toUpperCase()}"><img src="assets/icon/${(md.type || 'basic').toLowerCase()}.png" class="type-icon" alt="${md.type || 'basic'}" onerror="this.style.display='none'"></span></td>
-                                <td class="move-val">${md.baseDamage || '—'}</td>
-                                <td class="move-val">${md.accuracy || '100'}</td>
-                                <td class="move-val">${md.stamina || '—'}</td>
-                            </tr>`;
-                }).join('')}
-                    </tbody>
-                </table>` : '<p class="dim">No moves listed.</p>';
+                const movesHTML = moves.length ? `<div class="table-wrap"><table class="data-table">
+                    <thead><tr><th>Move</th><th>Type</th><th class="num">Power</th><th class="num">Accuracy</th><th class="num">Stamina</th></tr></thead>
+                    <tbody>${moves.map(n => {
+                    const md = this.db.moves[n.toLowerCase()] || {};
+                    const type = md.type || 'basic';
+                    return `<tr data-act="move" data-move="${esc(n)}" tabindex="0">
+                            <td><button class="move-link" data-act="move" data-move="${esc(n)}">${esc(sentence(n))}</button></td>
+                            <td><span class="type-cell"><img src="assets/icon/${esc(slug(type))}.png" alt="" onerror="this.remove()">${esc(sentence(type))}</span></td>
+                            <td class="num">${esc(md.baseDamage ?? '—')}</td><td class="num">${esc(md.accuracy ?? '100')}</td><td class="num">${esc(md.stamina ?? '—')}</td></tr>`;
+                }).join('')}</tbody></table></div>` : '<p class="dim">No moves listed.</p>';
 
-                const biomesHTML = biomes.map(b => {
-                    const bname = b.toLowerCase().replace(/\s+/g, '_');
-                    return `<div class="biome-chip">
-                    <img src="assets/biomes/${bname}.png" alt="${b}" onerror="this.style.display='none'">
-                    <span>${b.toUpperCase()}</span>
-                </div>`;
-                }).join('') || '<span class="dim">Unknown</span>';
+                const biomesHTML = biomes.length ? biomes.map(b => `<span class="chip"><img src="assets/biomes/${esc(slug(b))}.png" alt="" onerror="this.remove()">${esc(sentence(b))}</span>`).join('') : '<span class="dim">Habitat not recorded.</span>';
 
-                const dropsHTML = drops.length
-                    ? drops.map(d => {
-                        const cleanName = d.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                        const titleName = d.split(' ').map(w => w ? w.charAt(0).toUpperCase() + w.substring(1).toLowerCase() : '').join(' ');
-                        return `<span class="drop-tag"><img class="drop-icon" src="assets/items/${cleanName}.png" onerror="this.style.display='none'" alt="">${titleName}</span>`;
-                    }).join('')
-                    : '<span class="dim">No drops</span>';
+                const dropsHTML = drops.length ? drops.map(d => {
+                    const clean = d.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                    return `<span class="chip"><img class="icon" src="assets/items/${esc(clean)}.png" alt="" onerror="this.remove()">${esc(displayName(d))}</span>`;
+                }).join('') : '<span class="dim">No drops listed.</span>';
 
-                const aClass = org.class || org.animal_class || 'Unknown';
-                const aOrder = org.order || 'Unknown';
-                const aFamily = org.family || 'Unknown';
-                const aSubfamily = org.subfamily || 'Unknown';
-                const aDiet = org.diet || 'Unknown';
-                const aActivity = org.active_time || org.activity || 'Unknown';
+                const rel = this.related(org);
+                const relHTML = rel.list.length ? `<section>
+                    <h2>Related species</h2>
+                    <p class="section-note">Other members of the ${esc(rel.scope)}.</p>
+                    <div class="related">${rel.list.map(o => `<a class="plate-card" href="${this.hashFor(o.name)}">${this.plateHTML('org', o.name, o._name.charAt(0))}
+                        <div class="plate-card-name">${esc(o._name)}</div><div class="plate-card-sci">${esc(o._t.sci)}</div></a>`).join('')}</div>
+                    ${rel.total > rel.list.length ? `<p style="margin-top:16px"><button class="btn" data-act="taxon" ${rel.attrs}>See all ${nf(rel.total + 1)} in ${esc(rel.label)}</button></p>` : ''}
+                </section>` : '';
 
-                let weightLabel = 'Unknown';
-                if (org.weight) {
-                    const w = org.weight;
-                    if (this.unitSystem === 'imperial') {
-                        const lbs = (w * 2.20462).toFixed(1).replace(/\.0$/, '');
-                        weightLabel = `${lbs} LBS`;
-                    } else {
-                        if (w >= 1000) weightLabel = `${(w / 1000).toFixed(1).replace(/\.0$/, '')} TONS`;
-                        else if (w >= 1) weightLabel = `${w} KG`;
-                        else if (w >= 0.001) weightLabel = `${(w * 1000).toFixed(1).replace(/\.0$/, '')} G`;
-                        else if (w >= 0.000001) weightLabel = `${(w * 1000000).toFixed(1).replace(/\.0$/, '')} MG`;
-                        else if (w >= 0.000000001) weightLabel = `${(w * 1000000000).toFixed(1).replace(/\.0$/, '')} UG`;
-                        else weightLabel = `${(w * 1000000000000).toFixed(1).replace(/\.0$/, '')} NG`;
-                    }
+                const html = `<article class="article">
+                    <nav class="article-crumbs" aria-label="Classification"><ol>${crumbItems.join('')}</ol></nav>
+                    <h1 class="article-title" id="entry-title">${esc(org._name)}</h1>
+                    ${t.sci ? `<p class="article-sci">${esc(t.sci)}</p>` : ''}
+                    <div class="article-actions">
+                        <button class="btn" data-act="cry" data-cry="${cry}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+                            Hear its call</button>
+                    </div>
+                    <div class="article-layout">
+                        <div class="article-text">
+                            <section class="lead" aria-label="Overview">${overview}</section>
+                            <section><h2>Habitat</h2><div class="chips">${biomesHTML}</div></section>
+                            <section>
+                                <h2>Combat profile</h2>
+                                <p class="section-note">Game data for this species: base stats, abilities, moves and the items it drops.</p>
+                                <h3>Base stats</h3>
+                                <div class="stats">${statsHTML}</div>
+                                <div class="stat-total"><span>Base stat total</span><span>${org._bst}</span></div>
+                                <h3>Abilities</h3>${abilitiesHTML}
+                                <h3>Moves</h3>${movesHTML}
+                                <h3>Drops</h3><div class="chips">${dropsHTML}</div>
+                            </section>
+                            ${relHTML}
+                        </div>
+                        ${infobox}
+                    </div>
+                </article>`;
+
+                this.openSheet(html, org._name, 'species:' + org.name);
+            },
+
+            related(org) {
+                const t = org._t;
+                const others = this.db.orgs.filter(x => x !== org);
+                let pool = [], scope = '', label = '', attrs = '';
+                if (t.fam) {
+                    pool = others.filter(x => x._t.fam === t.fam && x._t.cls === t.cls);
+                    scope = `family ${t.fam}`; label = t.fam; attrs = this.taxAttrs(t, 'fam');
                 }
-
-                let sizeLabel = 'Unknown';
-                if (org.size) {
-                    const s = org.size;
-                    if (this.unitSystem === 'imperial') {
-                        const totalInches = s * 39.3701;
-                        const feet = Math.floor(totalInches / 12);
-                        const inches = Math.round(totalInches % 12);
-                        if (feet > 0) {
-                            sizeLabel = inches === 0 ? `${feet} FT` : `${feet} FT ${inches} IN`;
-                        } else {
-                            sizeLabel = `${inches} IN`;
-                        }
-                    } else {
-                        if (s >= 1000) sizeLabel = `${(s / 1000).toFixed(1).replace(/\.0$/, '')} KM`;
-                        else if (s >= 1) sizeLabel = `${s} M`;
-                        else if (s >= 0.01) sizeLabel = `${(s * 100).toFixed(1).replace(/\.0$/, '')} CM`;
-                        else if (s >= 0.001) sizeLabel = `${(s * 1000).toFixed(1).replace(/\.0$/, '')} MM`;
-                        else if (s >= 0.000001) sizeLabel = `${(s * 1000000).toFixed(1).replace(/\.0$/, '')} UM`;
-                        else sizeLabel = `${(s * 1000000000).toFixed(1).replace(/\.0$/, '')} NM`;
-                    }
+                if (pool.length < 1 && t.ord) {
+                    pool = others.filter(x => x._t.ord === t.ord && x._t.cls === t.cls);
+                    scope = `order ${t.ord}`; label = t.ord; attrs = this.taxAttrs(t, 'ord');
                 }
-
-                const robustness = (parseFloat(org.weight) || 0) / (parseFloat(org.size) || 1);
-                const robustnessLabel = robustness.toFixed(2);
-
-                document.getElementById('modal-content').innerHTML = `
-                <div class="detail-header" style="background-image: url('${this.rarityBackground(rarity)}'); background-size: cover; background-position: center;">
-                    <div class="detail-header-overlay" style="background:linear-gradient(135deg, ${rarityColor}33 0%, var(--bg-root) 100%)"></div>
-                    <div class="detail-sprite-wrap" onclick="App.playCry('${(org.cry || 'default').replace(/'/g, "\\'")}')" title="Play cry">
-                        <img src="${spriteSrc}" alt="${org.name}"
-                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                        <div class="sprite-fallback" style="display:none;font-size:5rem">🦎</div>
-                    </div>
-                    <div class="detail-intro">
-                        <div class="type-row">
-                            ${types.map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>` }).join('')}
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <h2 class="detail-name" style="margin:0;">${org.name.toUpperCase()}</h2>
-                            <button onclick="App.playCry('${(org.cry || 'default').replace(/'/g, "\\'")}')" 
-                                    style="background:none; border:none; font-size:24px; cursor:pointer; filter: drop-shadow(0 0 5px var(--accent));">
-                                    🔊
-                            </button>
-                        </div>
-                        <div class="detail-sciname">${org.scientific_name || ''}</div>
-                        <div class="classification-row">
-                            <div class="class-badge">
-                                <img src="assets/icon/${aClass.toLowerCase().replace(/ /g, '_')}.png" alt="${aClass}" onerror="this.src='assets/icon/unknown.png'">
-                                <div class="badge-label">
-                                    <span class="badge-type">Class</span>
-                                    <span class="badge-value">${aClass.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <div class="diet-badge">
-                                <img src="assets/icon/${aDiet.toLowerCase().replace(/ /g, '_')}.png" alt="${aDiet}" onerror="this.src='assets/icon/unknown.png'">
-                                <div class="badge-label">
-                                    <span class="badge-type">Diet</span>
-                                    <span class="badge-value">${aDiet.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <div class="class-badge">
-                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🌿</div>
-                                <div class="badge-label">
-                                    <span class="badge-type">Order</span>
-                                    <span class="badge-value">${aOrder.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <div class="class-badge">
-                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🧬</div>
-                                <div class="badge-label">
-                                    <span class="badge-type">Family</span>
-                                    <span class="badge-value">${aFamily.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <div class="class-badge">
-                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🔍</div>
-                                <div class="badge-label">
-                                    <span class="badge-type">Subfamily</span>
-                                    <span class="badge-value">${aSubfamily.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <div class="class-badge">
-                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">⚖️</div>
-                                <div class="badge-label">
-                                    <span class="badge-type">Weight</span>
-                                    <span class="badge-value">${weightLabel.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <div class="class-badge">
-                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">📏</div>
-                                <div class="badge-label">
-                                    <span class="badge-type">Size</span>
-                                    <span class="badge-value">${sizeLabel.toUpperCase()}</span>
-                                </div>
-                            </div>
-                            <div class="class-badge">
-                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">💪</div>
-                                <div class="badge-label">
-                                    <span class="badge-type">Robustness</span>
-                                    <span class="badge-value">${robustnessLabel} λ</span>
-                                </div>
-                            </div>
-                            <div class="class-badge">
-                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🕒</div>
-                                <div class="badge-label">
-                                    <span class="badge-type">Activity</span>
-                                    <span class="badge-value">${aActivity.toUpperCase()}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="rarity-pill" style="background:${rarityColor}22;color:${rarityColor};border-color:${rarityColor}55;margin-top:10px;">${rarity.toUpperCase()}</span>
-                    </div>
-                </div>
-
-                <div class="detail-body">
-                    <div class="detail-section">
-                        <div class="detail-section-title">📋 MISSION BRIEF</div>
-                        <p class="detail-desc">${org.description || 'No field data available.'}</p>
-                    </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">📊 BASE STATS</div>
-                        ${statsHTML}
-                        <div class="total-stat">BST: ${(org.health || 0) + (org.attack || 0) + (org.defense || 0) + (org.power || 0) + (org.resistance || 0) + (org.speed || 0)}</div>
-                    </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">🗺 HABITAT SIGNATURES</div>
-                        <div class="biome-row">${biomesHTML}</div>
-                    </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">⚡ SYSTEM CAPABILITIES</div>
-                        ${abilitiesHTML}
-                    </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">⚔ COMBAT ARCHIVE</div>
-                        ${movesHTML}
-                    </div>
-
-                    <div class="detail-section">
-                        <div class="detail-section-title">🎁 LOOT DROPS</div>
-                        <div class="drops-row">${dropsHTML}</div>
-                    </div>
-                </div>`;
-
-                document.getElementById('modal').classList.add('open');
-                document.body.style.overflow = 'hidden';
-                this.playCry(org.cry || 'default');
+                pool.sort((a, b) => ((b._t.gen === t.gen && !!t.gen) - (a._t.gen === t.gen && !!t.gen)) || this.taxCompare(a, b));
+                return { list: pool.slice(0, 8), total: pool.length, scope, label, attrs };
             },
 
             showMoveDetail(mName) {
-                const md = this.db.moves[mName.toLowerCase()];
-                if (!md) return;
-                const tc = this.typeColor(md.type || 'basic');
-                const content = document.getElementById('modal-content');
-                const existing = content.innerHTML;
-
-                const overlay = document.createElement('div');
-                overlay.className = 'move-overlay';
-                overlay.innerHTML = `
-                <div class="move-detail-card">
-                    <button class="close-move-overlay" onclick="this.parentElement.parentElement.remove()">✕</button>
-                    <div class="move-detail-name">${mName.toUpperCase()}</div>
-                    <span class="type-badge type-${(md.type || 'basic').toLowerCase()}" title="${(md.type || 'basic').toUpperCase()}"><img src="assets/icon/${(md.type || 'basic').toLowerCase()}.png" class="type-icon" alt="${md.type || 'basic'}" onerror="this.style.display='none'"></span>
-                    <div class="move-detail-stats">
-                        <div class="mds-row"><span>POWER</span><b>${md.baseDamage || '—'}</b></div>
-                        <div class="mds-row"><span>ACCURACY</span><b>${md.accuracy || '100'}%</b></div>
-                        <div class="mds-row"><span>PP (STAMINA)</span><b>${md.stamina || '—'}</b></div>
-                        <div class="mds-row"><span>CATEGORY</span><b>${md.category || '—'}</b></div>
-                    </div>
-                    <p class="move-detail-desc">${md.description || 'No description.'}</p>
+                const md = this.db.moves[String(mName).toLowerCase()];
+                const sheet = $('modal-content').parentElement;
+                sheet.querySelector('.dialog-scrim')?.remove();
+                const type = (md && md.type) || 'basic';
+                const scrim = document.createElement('div');
+                scrim.className = 'dialog-scrim';
+                scrim.innerHTML = `<div class="dialog" role="dialog" aria-modal="true" aria-label="${esc(sentence(mName))}">
+                    <button class="dialog-close" data-act="close-move" aria-label="Close">✕</button>
+                    <h2>${esc(sentence(mName))}</h2>
+                    <span class="type-cell"><img src="assets/icon/${esc(slug(type))}.png" alt="" onerror="this.remove()">${esc(sentence(type))} type</span>
+                    ${md ? `<dl class="dialog-facts">
+                        <div><dt>Power</dt><dd>${esc(md.baseDamage ?? '—')}</dd></div>
+                        <div><dt>Accuracy</dt><dd>${esc(md.accuracy ?? '100')}%</dd></div>
+                        <div><dt>Stamina</dt><dd>${esc(md.stamina ?? '—')}</dd></div>
+                        <div><dt>Category</dt><dd>${esc(md.category ?? '—')}</dd></div></dl>
+                        <p>${esc(md.description || 'No description has been written for this move.')}</p>` : '<p>No data is available for this move.</p>'}
                 </div>`;
-                overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-                document.getElementById('modal-content').appendChild(overlay);
+                scrim.onclick = e => { if (e.target === scrim) scrim.remove(); };
+                sheet.appendChild(scrim);
+                scrim.querySelector('.dialog-close').focus();
             },
 
-            showItemDetail(item) {
-                const imgSrc = `assets/items/${(item.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.png`;
-                const effectsHTML = (item.effects || []).map(e =>
-                    `<div class="detail-ability-card">
-                    <div class="ability-name">${e.type?.toUpperCase() || 'EFFECT'}</div>
-                    <div class="ability-desc">Stat: <b>${e.stat || '—'}</b> | Magnitude: <b>${e.magnitude || '—'}x</b></div>
-                </div>`).join('') || '<p class="dim">No effects listed.</p>';
-
-                document.getElementById('modal-content').innerHTML = `
-                <div class="detail-header">
-                    <div class="detail-sprite-wrap">
-                        <img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'">
+            /* ---------- Item entry ---------- */
+            renderItemDetail(item) {
+                const effects = (item.effects || []).map(e => `<div><dt>${esc(sentence(e.type || 'Effect'))}</dt>
+                    <dd>Stat: <b>${esc(e.stat || '—')}</b>. Magnitude: <b>${esc(e.magnitude || '—')}×</b></dd></div>`).join('');
+                const html = `<article class="article">
+                    <nav class="article-crumbs" aria-label="Section"><ol><li><button data-act="taxon">Items</button></li><li>${esc(sentence(item.category || 'Item'))}</li></ol></nav>
+                    <h1 class="article-title" id="entry-title">${esc(this.itemName(item))}</h1>
+                    ${item.price ? `<p class="article-sci" style="font-style:normal">${esc(item.price)} gold</p>` : ''}
+                    <div class="article-layout">
+                        <div class="article-text">
+                            <section class="lead"><p>${esc(item.description || 'No description has been written for this item yet.')}</p></section>
+                            <section><h2>Modifiers</h2>${effects ? `<dl class="defs">${effects}</dl>` : '<p class="dim">No modifiers listed.</p>'}</section>
+                        </div>
+                        <aside class="infobox"><figure>
+                            <div class="plate" data-item="${esc(item.name)}"><div class="plate-fallback" aria-hidden="true">${esc(this.itemName(item).charAt(0))}</div></div>
+                        </figure></aside>
                     </div>
-                    <div class="detail-intro">
-                        <span class="type-badge" style="background:var(--accent-dim);color:var(--accent)">${(item.category || 'item').toUpperCase()}</span>
-                        <h2 class="detail-name">${(item.name || '').replace(/_/g, ' ').toUpperCase()}</h2>
-                        <div class="detail-sciname">${item.price ? '💰 ' + item.price + 'G' : ''}</div>
-                    </div>
-                </div>
-                <div class="detail-body">
-                    <div class="detail-section">
-                        <div class="detail-section-title">📋 DESCRIPTION</div>
-                        <p class="detail-desc">${item.description || 'No description.'}</p>
-                    </div>
-                    <div class="detail-section">
-                        <div class="detail-section-title">⚡ MODIFIERS</div>
-                        ${effectsHTML}
-                    </div>
-                </div>`;
-
-                document.getElementById('modal').classList.add('open');
-                document.body.style.overflow = 'hidden';
+                </article>`;
+                this.openSheet(html, this.itemName(item), 'item:' + item.name);
             },
 
-            setMode(m) {
+            /* ---------- Modes, sort, view ---------- */
+            setMode(m, quiet) {
                 this.mode = m;
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.getElementById(m === 'animals' ? 'btn-animals' : 'btn-items').classList.add('active');
-                document.getElementById('animal-filters').style.display = m === 'animals' ? '' : 'none';
-                document.getElementById('item-filters').style.display = m === 'items' ? '' : 'none';
-                this.filter();
+                document.body.dataset.mode = m;
+                $('btn-animals').setAttribute('aria-current', m === 'animals' ? 'page' : 'false');
+                $('btn-items').setAttribute('aria-current', m === 'items' ? 'page' : 'false');
+                $('animal-filters').style.display = m === 'animals' ? '' : 'none';
+                $('item-filters').style.display = m === 'items' ? '' : 'none';
+                $('hero-title').textContent = m === 'animals' ? 'An encyclopedia of animal life' : 'Talismans and collectable items';
+                if (m === 'items') $('hero-lede').textContent = `${nf(this.db.items.length)} items that can be found, dropped or equipped.`;
+                else if (this.db.orgs.length) this.buildClassIndex();
+                if (!quiet) this.filter();
             },
 
-            setSort(s) {
+            setSort(s, quiet) {
                 this.sortBy = s;
-                document.querySelectorAll('.sort-chip').forEach(c => {
-                    c.classList.toggle('active', c.dataset.sort === s);
-                });
+                $('sort-select').value = s;
+                // Rankings read best highest-first; names and taxonomy read best from the start.
+                this.ascending = (s === 'taxonomy' || s === 'name');
+                this.syncOrderButton();
+                if (!quiet) this.filter();
+            },
+
+            syncOrderButton() {
+                $('order-label').textContent = this.ascending ? 'Ascending' : 'Descending';
+                $('order-icon').textContent = this.ascending ? '↑' : '↓';
+            },
+
+            toggleOrder() { this.ascending = !this.ascending; this.syncOrderButton(); this.filter(); },
+
+            setView(v) {
+                this.view = v;
+                $('view-grid').setAttribute('aria-pressed', String(v === 'grid'));
+                $('view-list').setAttribute('aria-pressed', String(v === 'list'));
                 this.filter();
             },
 
             setUnitSystem(val) {
                 this.unitSystem = val;
                 this.filter();
-            },
-
-            toggleOrder() {
-                this.ascending = !this.ascending;
-                document.getElementById('order-label').textContent = this.ascending ? 'ASCENDING' : 'DESCENDING';
-                document.getElementById('order-icon').textContent = this.ascending ? '↑' : '↓';
-                this.filter();
+                if ($('modal').classList.contains('open') && String(this.currentEntry).startsWith('species:')) {
+                    const org = this.byName.get(this.currentEntry.slice(8));
+                    this.currentEntry = null;
+                    if (org) this.renderDetail(org);
+                }
             },
 
             reset() {
-                document.getElementById('q').value = '';
-                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-order', 'flt-family', 'flt-subfamily', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-bst', 'flt-item-cat'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        if (el.tagName === 'SELECT') {
-                            el.selectedIndex = 0;
-                        } else {
-                            el.value = '';
-                        }
-                    }
-                });
-                document.getElementById('trigger-order').textContent = 'All Orders';
-                document.getElementById('trigger-family').textContent = 'All Families';
-                document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
-                document.getElementById('trigger-genus').textContent = 'All Genus';
-
-                document.getElementById('chk-exclude-mythical').checked = false;
-                this.sortBy = 'name';
-                this.ascending = true;
+                $('q').value = '';
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-bst', 'flt-item-cat']
+                    .forEach(id => { const el = $(id); if (el) el.selectedIndex = 0; });
+                ['order', 'family', 'subfamily', 'genus'].forEach(k => this.setPicker(k, ''));
+                $('chk-exclude-mythical').checked = false;
                 this.unitSystem = 'metric';
-                document.getElementById('flt-units').value = 'metric';
-                document.querySelectorAll('.sort-chip').forEach(c => c.classList.toggle('active', c.dataset.sort === 'name'));
-                document.getElementById('order-label').textContent = 'ASCENDING';
-                document.getElementById('order-icon').textContent = '↑';
+                $('flt-units').value = 'metric';
+                this.setSort('taxonomy', true);
                 this.filter();
             },
 
-            closeModal() {
-                document.getElementById('modal').classList.remove('open');
-                document.body.style.overflow = '';
-            },
-
             toggleFilter() {
-                document.getElementById('sidebar').classList.toggle('open');
-                document.getElementById('sidebar-overlay').classList.toggle('active');
+                $('sidebar').classList.toggle('open');
+                $('sidebar-overlay').classList.toggle('active');
+                this.syncLock();
             },
 
-            rarityBackground(rarity) {
-                const r = (rarity || 'common').toLowerCase();
-                if (r === 'mythical') return 'assets/icon/mythical.png';
-                if (r === 'legendary') return 'assets/icon/legendary.png';
-                if (r === 'epic') return 'assets/icon/epic.png';
-                if (r === 'rare') return 'assets/icon/rare.png';
-                if (r === 'uncommon') return 'assets/icon/uncommon.png';
-                if (r === 'common') return 'assets/icon/common.png';
-                return 'assets/icon/common.png';
+            toggleTheme() {
+                const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('anidex-theme', next); } catch (e) { }
             },
 
+            /* ---------- Taxon picker ---------- */
             openSearchSelector(type) {
                 this.searchSelector.type = type;
-
-                const aClass = document.getElementById('flt-class').value;
-                const aOrder = document.getElementById('flt-order').value;
-                const aFamily = document.getElementById('flt-family').value;
-                const aSubfamily = document.getElementById('flt-subfamily').value;
-
+                const aClass = $('flt-class').value, aOrder = $('flt-order').value, aFamily = $('flt-family').value, aSub = $('flt-subfamily').value;
                 let orgs = this.db.orgs;
-                if (type === 'order' || type === 'family' || type === 'subfamily' || type === 'genus') {
-                    if (aClass) orgs = orgs.filter(o => (o.class || o.animal_class) === aClass);
-                }
-                if (type === 'family' || type === 'subfamily' || type === 'genus') {
-                    if (aOrder) orgs = orgs.filter(o => o.order === aOrder);
-                }
-                if (type === 'subfamily' || type === 'genus') {
-                    if (aFamily) orgs = orgs.filter(o => o.family === aFamily);
-                }
-                if (type === 'genus') {
-                    if (aSubfamily) orgs = orgs.filter(o => o.subfamily === aSubfamily);
-                }
+                if (aClass) orgs = orgs.filter(o => o._t.cls === aClass);
+                if (['family', 'subfamily', 'genus'].includes(type) && aOrder) orgs = orgs.filter(o => o._t.ord === aOrder);
+                if (['subfamily', 'genus'].includes(type) && aFamily) orgs = orgs.filter(o => o._t.fam === aFamily);
+                if (type === 'genus' && aSub) orgs = orgs.filter(o => o._t.sub === aSub);
 
-                // Get all values for this field and calculate their counts
-                const counts = {};
+                const field = TAX_FIELD[type], info = new Map();
                 orgs.forEach(o => {
-                    let val = o[type];
-                    if (type === 'genus') {
-                        val = (o.scientific_name || '').split(' ')[0];
-                    }
-                    if (val && val.toLowerCase() !== 'unknown') {
-                        counts[val] = (counts[val] || 0) + 1;
-                    }
+                    const val = o._t[field];
+                    if (!val) return;
+                    const e = info.get(val) || { value: val, count: 0, cRank: o._t.cRank, oRank: type === 'order' ? o._t.oRank : 0 };
+                    e.count++;
+                    info.set(val, e);
                 });
-
-                // Convert to sorted array of objects
-                const options = Object.keys(counts).sort().map(val => ({
-                    value: val,
-                    count: counts[val]
-                }));
+                const options = [...info.values()].sort((a, b) => a.cRank - b.cRank || a.oRank - b.oRank || a.value.localeCompare(b.value));
 
                 this.searchSelector.options = options;
                 this.searchSelector.filtered = [...options];
-                this.searchSelector.selectedValue = document.getElementById(`flt-${type}`).value;
-
-                // Update UI title
-                document.getElementById('search-selector-title').textContent = `SELECT ${type.toUpperCase()}`;
-
-                // Clear input
-                const inp = document.getElementById('search-selector-input');
+                this.searchSelector.selectedValue = $('flt-' + type).value;
+                $('search-selector-title').textContent = PICKER_TITLE[type];
+                const inp = $('search-selector-input');
                 inp.value = '';
-
                 this.renderSearchSelectorOptions();
-
-                // Open modal
-                const modal = document.getElementById('search-selector-modal');
-                modal.classList.add('open');
-                document.body.style.overflow = 'hidden';
-
-                // Focus search input
+                $('search-selector-modal').classList.add('open');
+                this.syncLock();
                 setTimeout(() => inp.focus(), 50);
             },
 
             closeSearchSelector() {
-                document.getElementById('search-selector-modal').classList.remove('open');
-                // Only restore body overflow if primary detail modal is also closed
-                if (!document.getElementById('modal').classList.contains('open')) {
-                    document.body.style.overflow = '';
-                }
+                $('search-selector-modal').classList.remove('open');
+                this.syncLock();
             },
 
             filterSearchSelector() {
-                const q = document.getElementById('search-selector-input').value.toLowerCase();
-                this.searchSelector.filtered = this.searchSelector.options.filter(opt =>
-                    opt.value.toLowerCase().includes(q)
-                );
+                const q = $('search-selector-input').value.trim().toLowerCase();
+                this.searchSelector.filtered = this.searchSelector.options.filter(o => o.value.toLowerCase().includes(q));
                 this.renderSearchSelectorOptions();
             },
 
             selectSearchSelectorOption(val) {
                 const type = this.searchSelector.type;
-                const hiddenInput = document.getElementById(`flt-${type}`);
-                const triggerBtn = document.getElementById(`trigger-${type}`);
-
-                hiddenInput.value = val;
-                triggerBtn.textContent = val ? val.toUpperCase() : `All ${type.charAt(0).toUpperCase() + type.slice(1)}s`;
-
-                if (type === 'order') {
-                    document.getElementById('flt-family').value = '';
-                    document.getElementById('trigger-family').textContent = 'All Families';
-                    document.getElementById('flt-subfamily').value = '';
-                    document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
-                    document.getElementById('flt-genus').value = '';
-                    document.getElementById('trigger-genus').textContent = 'All Genus';
-                } else if (type === 'family') {
-                    document.getElementById('flt-subfamily').value = '';
-                    document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
-                    document.getElementById('flt-genus').value = '';
-                    document.getElementById('trigger-genus').textContent = 'All Genus';
-                } else if (type === 'subfamily') {
-                    document.getElementById('flt-genus').value = '';
-                    document.getElementById('trigger-genus').textContent = 'All Genus';
-                }
-
+                this.setPicker(type, val);
+                const i = ['order', 'family', 'subfamily', 'genus'].indexOf(type);
+                ['order', 'family', 'subfamily', 'genus'].slice(i + 1).forEach(k => this.setPicker(k, ''));
                 this.closeSearchSelector();
                 this.filter();
             },
 
             renderSearchSelectorOptions() {
-                const container = document.getElementById('search-selector-options');
-                container.innerHTML = '';
-
-                // Add "ALL" option first
-                const allOpt = document.createElement('div');
-                const isAllSelected = !this.searchSelector.selectedValue;
-                allOpt.className = `search-option-item ${isAllSelected ? 'selected' : ''}`;
-                allOpt.innerHTML = `<span>ALL ${this.searchSelector.type.toUpperCase()}S</span><span class="badge">${this.searchSelector.options.reduce((sum, opt) => sum + opt.count, 0)}</span>`;
-                allOpt.onclick = () => this.selectSearchSelectorOption('');
-                container.appendChild(allOpt);
-
-                if (this.searchSelector.filtered.length === 0) {
-                    container.innerHTML = `<div class="search-selector-empty">NO OPTIONS FOUND</div>`;
+                const box = $('search-selector-options');
+                box.innerHTML = '';
+                const type = this.searchSelector.type, sel = this.searchSelector.selectedValue;
+                const mk = (label, n, val) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'option';
+                    b.setAttribute('role', 'option');
+                    b.setAttribute('aria-selected', String(sel === val));
+                    b.innerHTML = `<span>${esc(label)}</span><span class="n">${nf(n)}</span>`;
+                    b.onclick = () => this.selectSearchSelectorOption(val);
+                    box.appendChild(b);
+                };
+                mk(PICKER_ALL[type], this.searchSelector.options.reduce((s, o) => s + o.count, 0), '');
+                if (!this.searchSelector.filtered.length) {
+                    const p = document.createElement('div');
+                    p.className = 'picker-empty';
+                    p.textContent = 'Nothing matches that search.';
+                    box.appendChild(p);
                     return;
                 }
-
-                this.searchSelector.filtered.forEach(opt => {
-                    const isSelected = this.searchSelector.selectedValue === opt.value;
-                    const el = document.createElement('div');
-                    el.className = `search-option-item ${isSelected ? 'selected' : ''}`;
-                    el.innerHTML = `<span>${opt.value.toUpperCase()}</span><span class="badge">${opt.count}</span>`;
-                    el.onclick = () => this.selectSearchSelectorOption(opt.value);
-                    container.appendChild(el);
-                });
+                this.searchSelector.filtered.forEach(o => mk(o.value, o.count, o.value));
             },
 
-            triggerBioScanner() {
-                document.getElementById('bio-scanner-upload').click();
-            },
+            /* ---------- Bio scanner ---------- */
+            triggerBioScanner() { $('bio-scanner-upload').click(); },
 
             async handleBioScan(event) {
                 const file = event.target.files[0];
                 if (!file) return;
-
                 const img = new Image();
                 img.src = URL.createObjectURL(file);
                 await new Promise(r => img.onload = r);
 
-                const overlay = document.getElementById('bio-scanner-overlay');
-                const status = document.getElementById('bio-scanner-status');
-                const progress = document.getElementById('bio-scanner-progress');
-
+                const overlay = $('bio-scanner-overlay'), status = $('bio-scanner-status'), progress = $('bio-scanner-progress');
                 overlay.style.display = 'flex';
-                status.textContent = 'Initializing Scanner...';
+                status.textContent = 'Initializing scanner…';
                 progress.style.width = '0%';
 
                 try {
@@ -1206,19 +1575,15 @@
                         status.textContent = msg;
                         progress.style.width = pct + '%';
                     });
-
                     setTimeout(() => {
                         overlay.style.display = 'none';
-                        event.target.value = ''; // Reset
-                        if (results && results.length > 0) {
-                            App.showDetail(results[0].name);
-                        } else {
-                            alert("No match found.");
-                        }
+                        event.target.value = '';
+                        if (results && results.length > 0) App.showDetail(results[0].name);
+                        else alert('No match found.');
                     }, 500);
                 } catch (e) {
                     console.error(e);
-                    alert("Scanner failed.");
+                    alert('Scanner failed.');
                     overlay.style.display = 'none';
                     event.target.value = '';
                 }
@@ -1227,54 +1592,6 @@
 
         App.start();
     </script>
-
-    <!-- Search Selector Modal -->
-    <div id="search-selector-modal" class="modal-overlay" onclick="App.closeSearchSelector()">
-        <div class="modal-box search-selector-box" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="App.closeSearchSelector()">✕</button>
-            <div class="search-selector-header">
-                <div class="search-selector-title" id="search-selector-title">SELECT ORDER</div>
-                <div class="search-selector-search-wrap">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                    </svg>
-                    <input type="text" id="search-selector-input" placeholder="Type to search..."
-                        oninput="App.filterSearchSelector()" autocomplete="off">
-                </div>
-            </div>
-            <div class="search-selector-body" id="search-selector-options">
-                <!-- Dynamically generated items -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Bio Scanner UI -->
-    <input type="file" id="bio-scanner-upload" accept="image/*" capture="environment"
-        onchange="App.handleBioScan(event)" style="display:none;">
-    <div id="bio-scanner-overlay"
-        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:10000; flex-direction:column; align-items:center; justify-content:center; color:var(--accent); font-family:'Press Start 2P', monospace;">
-        <div style="font-size:3rem; margin-bottom:20px; animation: pulse 1s infinite alternate;">🧬</div>
-        <div id="bio-scanner-status" style="margin-bottom:20px; font-size:12px; letter-spacing:2px; text-align:center;">
-            Initializing Scanner...</div>
-        <div style="width:200px; height:4px; background:#333; border-radius:2px; overflow:hidden;">
-            <div id="bio-scanner-progress"
-                style="width:0%; height:100%; background:var(--accent); transition: width 0.2s;"></div>
-        </div>
-        <style>
-            @keyframes pulse {
-                from {
-                    opacity: 0.5;
-                    transform: scale(0.9);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: scale(1.1);
-                }
-            }
-        </style>
-    </div>
 
     <script src="bio_scanner.js"></script>
 </body>
