@@ -3,14 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#eef2ee">
     <title>Anidex — An Encyclopedia of Animal Life</title>
     <meta name="description"
         content="Anidex is an illustrated encyclopedia of animal life, arranged by scientific classification: class, order, family, genus and species.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..700&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script>
@@ -20,6 +21,8 @@
             try { t = localStorage.getItem('anidex-theme'); } catch (e) { }
             if (!t) t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', t);
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', t === 'dark' ? '#0c1719' : '#eef2ee');
         })();
     </script>
 </head>
@@ -48,16 +51,30 @@
                     <path d="m21 21-4.35-4.35" />
                 </svg>
                 <input type="search" id="q" placeholder="Search animals, families, habitats" autocomplete="off"
-                    aria-label="Search the encyclopedia" oninput="App.filter()">
+                    aria-label="Search the encyclopedia" role="combobox" aria-expanded="false" aria-controls="suggest"
+                    aria-autocomplete="list" enterkeyhint="search" oninput="App.onSearch()" onkeydown="App.onSearchKey(event)">
                 <span class="kbd-hint" aria-hidden="true">/</span>
+                <ul class="suggest" id="suggest" role="listbox" aria-label="Suggestions"></ul>
             </div>
 
             <nav class="mast-nav" aria-label="Sections">
-                <button class="nav-link" id="btn-animals" aria-current="page" onclick="App.setMode('animals')">Animals</button>
+                <button class="nav-link" id="btn-animals" aria-current="page" onclick="App.goHome()">Animals</button>
                 <button class="nav-link" id="btn-items" onclick="App.setMode('items')">Items</button>
+                <button class="nav-link" id="btn-saved" onclick="App.setSaved(true)">Saved <span class="count-badge fav-count"></span></button>
                 <a class="nav-link" href="animal_report.html">Rankings</a>
                 <a class="nav-link" href="minigames.html">Minigames</a>
                 <span class="nav-sep" aria-hidden="true"></span>
+                <button class="icon-btn" id="random-btn" onclick="App.random()" title="Open a random animal"
+                    aria-label="Open a random animal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <rect x="4" y="4" width="16" height="16" rx="3.5" />
+                        <circle cx="9" cy="9" r="1" fill="currentColor" />
+                        <circle cx="15" cy="9" r="1" fill="currentColor" />
+                        <circle cx="9" cy="15" r="1" fill="currentColor" />
+                        <circle cx="15" cy="15" r="1" fill="currentColor" />
+                    </svg>
+                </button>
                 <button class="icon-btn" onclick="App.triggerBioScanner()" title="Identify an animal from a photo"
                     aria-label="Identify an animal from a photo">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
@@ -82,23 +99,52 @@
         </div>
     </header>
 
-    <!-- ===== Hero with class index ===== -->
-    <section class="hero">
+    <!-- ===== Hero: title, and today's species ===== -->
+    <section class="hero" id="hero">
         <svg class="hero-tree" viewBox="0 0 920 380" preserveAspectRatio="none" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path vector-effect="non-scaling-stroke" d="M0 190.0H70M70 102.5V277.5M70 102.5H111M111 60.5V144.5M111 60.5H148M148 40.3V80.7M148 40.3H198M198 30.7V50.0M198 30.7H254M254 26.0V35.3M254 26.0H307M307 26.0H900M254 35.3H291M291 35.3H900M198 50.0H236M236 45.4V54.7M236 45.4H306M306 45.4H900M236 54.7H275M275 54.7H900M148 80.7H192M192 71.0V90.3M192 71.0H267M267 66.3V75.6M267 66.3H319M319 66.3H900M267 75.6H344M344 75.6H900M192 90.3H228M228 84.1V96.5M228 84.1H274M274 84.1H900M228 90.3H268M268 90.3H900M228 96.5H267M267 96.5H900M111 144.5H158M158 117.6V171.4M158 117.6H200M200 111.2V124.1M200 111.2H262M262 111.2H900M200 124.1H251M251 124.1H900M158 144.5H216M216 138.0V151.0M216 138.0H253M253 138.0H900M216 151.0H259M259 151.0H900M158 171.4H222M222 164.9V177.8M222 164.9H270M270 164.9H900M222 177.8H282M282 177.8H900M70 277.5H124M124 235.5V319.5M124 235.5H193M193 215.3V255.7M193 215.3H238M238 205.7V225.0M238 205.7H295M295 199.5V211.9M295 199.5H361M361 199.5H900M295 205.7H341M341 205.7H900M295 211.9H372M372 211.9H900M238 225.0H277M277 220.4V229.7M277 220.4H344M344 220.4H900M277 229.7H318M318 229.7H900M193 255.7H248M248 246.0V265.3M248 246.0H312M312 239.8V252.2M312 239.8H371M371 239.8H900M312 246.0H384M384 246.0H900M312 252.2H360M360 252.2H900M248 265.3H313M313 260.7V270.0M313 260.7H373M373 260.7H900M313 270.0H367M367 270.0H900M124 319.5H195M195 292.6V346.4M195 292.6H250M250 286.2V299.1M250 286.2H286M286 286.2H900M250 299.1H315M315 299.1H900M195 319.5H257M257 310.9V328.1M257 310.9H328M328 310.9H900M257 319.5H304M304 319.5H900M257 328.1H308M308 328.1H900M195 346.4H258M258 339.9V352.8M258 339.9H313M313 339.9H900M258 352.8H300M300 352.8H900"/></g></svg>
         <div class="hero-inner">
-            <h1 class="hero-title" id="hero-title">An encyclopedia of animal life</h1>
-            <p class="hero-lede" id="hero-lede">Loading the collection…</p>
-            <div class="class-index" id="class-index" role="tablist" aria-label="Browse by class"></div>
+            <div class="hero-copy">
+                <h1 class="hero-title" id="hero-title">An encyclopedia of animal life</h1>
+                <p class="hero-lede" id="hero-lede">Loading the collection…</p>
+                <div class="hero-actions">
+                    <button class="btn btn-light" onclick="App.random()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+                            stroke-linejoin="round" aria-hidden="true">
+                            <rect x="4" y="4" width="16" height="16" rx="3.5" />
+                            <circle cx="9" cy="9" r="1" fill="currentColor" />
+                            <circle cx="15" cy="15" r="1" fill="currentColor" />
+                        </svg>
+                        Surprise me
+                    </button>
+                    <button class="btn btn-ghost" onclick="App.triggerBioScanner()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+                            stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+                            <circle cx="12" cy="12" r="3.2" />
+                        </svg>
+                        Identify from a photo
+                    </button>
+                </div>
+            </div>
+            <div class="spot-col">
+                <a class="spot hued is-loading" id="spotlight" href="#" aria-label="Today's species"></a>
+            </div>
         </div>
     </section>
 
+    <!-- ===== Class chips ===== -->
+    <div class="class-bar">
+        <div class="class-index" id="class-index" role="tablist" aria-label="Browse by class"></div>
+    </div>
+
     <div class="layout">
-        <!-- ===== Filter rail ===== -->
+        <!-- ===== Filter rail (bottom sheet on phones) ===== -->
         <aside id="sidebar" class="rail" aria-label="Refine results">
+            <div class="grab" aria-hidden="true"></div>
             <div class="rail-head">
                 <h2>Refine results</h2>
                 <button class="link-btn" onclick="App.reset()">Clear all</button>
-                <button class="link-btn rail-close" onclick="App.toggleFilter()">Close</button>
+                <button class="link-btn rail-close" onclick="App.closePanel()">Close</button>
             </div>
 
             <div id="animal-filters">
@@ -280,8 +326,11 @@
                     </div>
                 </details>
             </div>
+
+            <div class="rail-apply">
+                <button class="btn btn-primary" onclick="App.closePanel()">Show <span id="apply-count">results</span></button>
+            </div>
         </aside>
-        <div id="sidebar-overlay" class="rail-scrim" onclick="App.toggleFilter()"></div>
 
         <!-- ===== Results ===== -->
         <main id="results" class="results" tabindex="-1">
@@ -291,14 +340,7 @@
                     <div class="result-count" id="result-count" role="status" aria-live="polite">Loading…</div>
                 </div>
                 <div class="toolbar-controls">
-                    <button class="btn filter-toggle" onclick="App.toggleFilter()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            aria-hidden="true">
-                            <path d="M4 6h16M7 12h10M10 18h4" />
-                        </svg>
-                        Filters<span id="filter-count"></span>
-                    </button>
-                    <label class="sort-field">Sort
+                    <label class="sort-field"><span class="sort-lbl">Sort</span>
                         <select id="sort-select" onchange="App.setSort(this.value)">
                             <option value="taxonomy">Taxonomic order</option>
                             <option value="name">Name</option>
@@ -315,23 +357,23 @@
                         </select>
                     </label>
                     <button class="btn" id="order-btn" onclick="App.toggleOrder()" aria-label="Reverse sort direction">
-                        <span id="order-label">Ascending</span>
+                        <span class="btn-txt" id="order-label">Ascending</span>
                         <span id="order-icon" aria-hidden="true">↑</span>
                     </button>
                     <div class="seg" role="group" aria-label="Layout">
-                        <button id="view-grid" aria-pressed="true" onclick="App.setView('grid')">
+                        <button id="view-grid" aria-pressed="true" onclick="App.setView('grid')" aria-label="Gallery view">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                <rect x="4" y="4" width="6.5" height="6.5" /><rect x="13.5" y="4" width="6.5" height="6.5" />
-                                <rect x="4" y="13.5" width="6.5" height="6.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" />
+                                <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+                                <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
                             </svg>
-                            Gallery
+                            <span class="seg-txt">Gallery</span>
                         </button>
-                        <button id="view-list" aria-pressed="false" onclick="App.setView('list')">
+                        <button id="view-list" aria-pressed="false" onclick="App.setView('list')" aria-label="Index view">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 aria-hidden="true">
                                 <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />
                             </svg>
-                            Index
+                            <span class="seg-txt">Index</span>
                         </button>
                     </div>
                 </div>
@@ -339,7 +381,10 @@
 
             <div class="active-filters" id="active-filters"></div>
 
-            <div id="grid" class="grid"></div>
+            <div id="grid" class="grid" aria-busy="true">
+                <div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div>
+                <div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div>
+            </div>
 
             <div id="sentinel" style="height:1px;"></div>
             <div id="loading-more" class="loading-more" style="display:none;">
@@ -354,16 +399,113 @@
             the data supplied with each entry.</p>
     </footer>
 
+    <!-- ===== Phone tab bar ===== -->
+    <nav class="tabbar" aria-label="Main">
+        <button class="tab" id="tab-animals" aria-current="page" onclick="App.goHome()">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="10" r="1.8" /><circle cx="10" cy="5.8" r="1.8" /><circle cx="14" cy="5.8" r="1.8" /><circle cx="17.5" cy="10" r="1.8" /><path d="M12 11.5c-3 0-5.5 3-5.5 5.2 0 1.5 1.3 2.3 2.7 2.3 1 0 1.8-.5 2.8-.5s1.8.5 2.8.5c1.4 0 2.7-.8 2.7-2.3 0-2.2-2.5-5.2-5.5-5.2Z" /></svg></span>
+            Animals
+        </button>
+        <button class="tab" id="tab-items" onclick="App.setMode('items')">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12l3 5-9 13L3 8l3-5Z" /><path d="M3 8h18M9 3l3 5 3-5M12 21 9 8M12 21l3-13" /></svg></span>
+            Items
+        </button>
+        <button class="tab" id="tab-saved" onclick="App.setSaved(!App.onlyFav)">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.3C1.5 8 3.4 4.8 6.6 4.8c2 0 3.6 1.1 5.4 3.1 1.8-2 3.4-3.1 5.4-3.1 3.2 0 5.1 3.2 3.9 6.4-1.8 4.7-9.3 9.3-9.3 9.3Z" /></svg></span>
+            Saved
+            <span class="count-badge fav-count"></span>
+        </button>
+        <button class="tab" id="tab-filters" aria-pressed="false" onclick="App.toggleFilter()">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg></span>
+            Filters
+            <span class="count-badge" id="filter-badge"></span>
+        </button>
+        <button class="tab" id="tab-more" aria-pressed="false" onclick="App.toggleMore()">
+            <span class="ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="19" cy="12" r="1.7" /></svg></span>
+            More
+        </button>
+    </nav>
+
+    <div id="scrim" class="scrim" onclick="App.closePanel()"></div>
+
+    <!-- ===== More sheet (phones) ===== -->
+    <div id="more" class="bsheet" role="dialog" aria-label="More options">
+        <div class="grab" style="display:block;margin:10px auto 6px" aria-hidden="true"></div>
+        <h2>More</h2>
+        <div class="more-list">
+            <button class="more-item" onclick="App.closePanel(); App.random()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5" /><circle cx="9" cy="9" r="1" fill="currentColor" /><circle cx="15" cy="15" r="1" fill="currentColor" /></svg>
+                <span>Random animal<small>Open a surprise entry</small></span>
+            </button>
+            <a class="more-item" href="animal_report.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7" /></svg>
+                <span>Rankings<small>Top animals by stat</small></span>
+            </a>
+            <a class="more-item" href="minigames.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="7" width="19" height="11" rx="5" /><path d="M7 10.5v4M5 12.5h4M16 11h.01M18 14h.01" /></svg>
+                <span>Minigames<small>Play with what you have learned</small></span>
+            </a>
+            <button class="more-item" onclick="App.closePanel(); App.triggerBioScanner()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" /><circle cx="12" cy="12" r="3.2" /></svg>
+                <span>Identify from a photo<small>Point your camera at an animal</small></span>
+            </button>
+            <button class="more-item" onclick="App.toggleTheme()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" /></svg>
+                <span id="theme-label">Dark theme</span>
+            </button>
+            <div class="more-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17 17 3l4 4L7 21l-4-4Z" /><path d="m8 12 2 2M11 9l2 2M14 6l2 2" /></svg>
+                <span>Units</span>
+                <div class="seg" role="group" aria-label="Units">
+                    <button id="unit-metric" aria-pressed="true" onclick="App.setUnitSystem('metric')">Metric</button>
+                    <button id="unit-imperial" aria-pressed="false" onclick="App.setUnitSystem('imperial')">Imperial</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== Entry (article) ===== -->
     <div id="modal" class="overlay" onclick="App.closeModal()">
         <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="entry-title" onclick="event.stopPropagation()">
             <div class="sheet-bar">
-                <span class="sheet-label">Anidex entry</span>
-                <button class="sheet-close" id="modal-close" onclick="App.closeModal()">Close <kbd>Esc</kbd></button>
+                <button class="sheet-close" id="modal-close" onclick="App.closeModal()" aria-label="Close entry">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    <span class="sheet-close-txt">Close</span> <kbd>Esc</kbd>
+                </button>
+                <span class="sheet-label" id="sheet-label">Anidex entry</span>
+                <div class="sheet-nav" id="sheet-nav">
+                    <button class="icon-btn" onclick="App.stepEntry(-1)" aria-label="Previous animal" title="Previous (←)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+                    <button class="icon-btn" onclick="App.stepEntry(1)" aria-label="Next animal" title="Next (→)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                    </button>
+                </div>
             </div>
             <div id="modal-content"></div>
         </div>
     </div>
+
+    <!-- ===== Compare ===== -->
+    <div id="compare-modal" class="overlay is-top" onclick="App.closeCompare()">
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="cmp-title" onclick="event.stopPropagation()">
+            <div class="sheet-bar">
+                <span class="sheet-label" id="cmp-title">Compare animals</span>
+                <button class="sheet-close" onclick="App.closeCompare()" aria-label="Close comparison">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                    <span class="sheet-close-txt">Close</span> <kbd>Esc</kbd>
+                </button>
+            </div>
+            <div id="compare-content" class="cmp-wrap"></div>
+        </div>
+    </div>
+
+    <div id="tray" class="tray" role="region" aria-label="Compare animals">
+        <span class="tray-text" id="tray-text"></span>
+        <button class="btn btn-primary" id="tray-go" onclick="App.openCompare()">Compare</button>
+        <button class="tray-x" onclick="App.clearCompare()" aria-label="Clear comparison">✕</button>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <!-- ===== Taxon picker ===== -->
     <div id="search-selector-modal" class="overlay is-center" onclick="App.closeSearchSelector()">
@@ -409,6 +551,7 @@
         const sig = x => Number(Number(x).toPrecision(3)).toLocaleString('en-US', { maximumFractionDigits: 8 });
         const cmpStr = (a, b) => a === b ? 0 : !a ? 1 : !b ? -1 : a.localeCompare(b);
         const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const isPhone = () => window.innerWidth <= 900;
 
         function displayName(n) {
             n = String(n || '').replace(/_/g, ' ').trim();
@@ -417,6 +560,14 @@
             }
             return n;
         }
+
+        const ICONS = {
+            heart: '<path d="M12 20.5s-7.5-4.6-9.3-9.3C1.5 8 3.4 4.8 6.6 4.8c2 0 3.6 1.1 5.4 3.1 1.8-2 3.4-3.1 5.4-3.1 3.2 0 5.1 3.2 3.9 6.4-1.8 4.7-9.3 9.3-9.3 9.3Z"/>',
+            share: '<path d="M12 3v12M8 7l4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
+            compare: '<path d="M12 4v16M8 20h8M4 8l8-3 8 3"/><path d="M4 8 1.8 14a3.2 3.2 0 0 0 4.4 0L4 8ZM20 8l-2.2 6a3.2 3.2 0 0 0 4.4 0L20 8Z"/>',
+            sound: '<path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>'
+        };
+        const ico = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
 
         /* ======================================================================
            Taxonomy: the order in which an encyclopedia lists animal groups.
@@ -445,6 +596,20 @@
             ['porifera', 'Sponges', /demospong|sponge|porifera|calcarea|hexactinell/i],
             ['annelida', 'Segmented worms', /clitellata|polychaet|annelid|worm/i],
         ];
+
+        // Each class gets its own colour (a hue on the colour wheel).
+        const CLASS_HUE = {
+            mammalia: 28, aves: 205, reptilia: 122, amphibia: 165, chondrichthyes: 218, actinopterygii: 188,
+            sarcopterygii: 252, agnatha: 272, insecta: 66, arachnida: 290, malacostraca: 8, myriapoda: 44,
+            cephalopoda: 335, gastropoda: 92, bivalvia: 312, cnidaria: 352, echinodermata: 16, porifera: 52, annelida: 148
+        };
+        function hueFor(key) {
+            if (!key) return 200;
+            if (key in CLASS_HUE) return CLASS_HUE[key];
+            let h = 0;
+            for (const ch of String(key)) h = (h * 31 + ch.charCodeAt(0)) % 360;
+            return h;
+        }
 
         const ORDER_SEQ = {
             mammalia: ['monotremata', 'didelphimorphia', 'paucituberculata', 'microbiotheria', 'dasyuromorphia', 'peramelemorphia', 'notoryctemorphia', 'diprotodontia',
@@ -490,6 +655,8 @@
             ['flt-drop', 'Drop'], ['flt-bst', 'Base stats']
         ];
 
+        const STAT_DEFS = [['Health', 'health', 500], ['Attack', 'attack', 200], ['Defense', 'defense', 200], ['Power', 'power', 200], ['Resistance', 'resistance', 200], ['Speed', 'speed', 200]];
+
         /* ======================================================================
            Sprites: resilient image loading.
            Tries several file-name spellings and extensions, retries once for
@@ -531,6 +698,17 @@
                 add(`${dir}${slug(n).replace(/_/g, '-')}.png`);
                 add(`${dir}${n.replace(/[^a-z0-9]/g, '')}.png`);
                 return out;
+            },
+            // Quietly checks which spelling loads, without touching the page.
+            // Used to choose a "today's species" that actually has a picture.
+            async probe(org) {
+                const cached = this.cache.get(org.name);
+                if (cached) return cached;
+                const tryOne = u => new Promise(res => { const im = new Image(); im.onload = () => res(true); im.onerror = () => res(false); im.src = u; });
+                for (const u of this.forOrg(org).slice(0, 4)) {
+                    if (await tryOne(u)) { this.cache.set(org.name, u); return u; }
+                }
+                return null;
             },
             mount(wrap, list, alt, key, eager) {
                 wrap.classList.add('is-loading');
@@ -591,10 +769,18 @@
             counts: null,
             currentEntry: null,
             lastFocus: null,
+            favs: new Set(),
+            onlyFav: false,
+            compare: [],
+            panel: null,
+            sgIndex: -1,
+            spotHue: 205,
             searchSelector: { type: '', options: [], filtered: [], selectedValue: '' },
 
             /* ---------- Startup ---------- */
             async start() {
+                this.loadFavs();
+                this.syncThemeUI();
                 const get = url => fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).catch(err => { console.warn('[Anidex] Could not load', url, err); return []; });
                 const [o1, o2, m, t, a] = await Promise.all([
                     get('assets/Organisms.json'), get('assets/Organisms2.json'),
@@ -609,9 +795,11 @@
                 this.db.orgs.forEach(o => this.enrich(o));
                 this.db.orgs.forEach(o => this.byName.set(o.name, o));
 
+                $('grid').setAttribute('aria-busy', 'false');
                 if (!this.db.orgs.length) {
                     $('hero-lede').textContent = 'The collection could not be loaded.';
                     $('result-count').textContent = 'No data';
+                    $('spotlight').parentElement.hidden = true;
                     $('grid').innerHTML = `<div class="empty"><h3>The animal data did not load</h3>
                         <p>Anidex reads its entries from <code>assets/Organisms.json</code>. If you opened this page straight from a folder (file://), your browser blocks that request. Serve the folder over http instead, for example with <code>python -m http.server</code>, then reload.</p></div>`;
                     return;
@@ -622,7 +810,9 @@
                 this.filter();
                 this.setupObserver();
                 this.bindEvents();
+                this.syncFavUI();
                 this.syncFromHash();
+                this.pickSpotlight();
             },
 
             enrich(o) {
@@ -635,7 +825,8 @@
                 o._t = {
                     cls, ord, fam, sub, gen, sci,
                     epithet: (words[1] || '').toLowerCase(),
-                    cKey: c.key, cCommon: c.common, cRank: c.rank, oRank: orderRank(c.key, ord)
+                    cKey: c.key, cCommon: c.common, cRank: c.rank, oRank: orderRank(c.key, ord),
+                    hue: hueFor(c.key)
                 };
                 o._name = displayName(o.name);
                 o._bst = (o.health || 0) + (o.attack || 0) + (o.defense || 0) + (o.power || 0) + (o.resistance || 0) + (o.speed || 0);
@@ -644,6 +835,16 @@
 
             bindEvents() {
                 $('modal-content').addEventListener('click', e => {
+                    const j = e.target.closest('[data-jump]');
+                    if (j) {
+                        const el = $('modal-content').querySelector('#' + j.dataset.jump);
+                        if (el) el.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+                        return;
+                    }
+                    const f = e.target.closest('[data-fav]');
+                    if (f) { this.toggleFav(f.dataset.fav); return; }
+                    const c = e.target.closest('[data-cmp]');
+                    if (c) { this.toggleCompare(c.dataset.cmp); return; }
                     const b = e.target.closest('[data-act]');
                     if (!b) return;
                     const d = b.dataset;
@@ -651,26 +852,275 @@
                         this.closeModal();
                         this.goTaxon({ cls: d.cls, ord: d.ord, fam: d.fam, sub: d.sub, gen: d.gen });
                     } else if (d.act === 'cry') this.playCry(d.cry);
+                    else if (d.act === 'share') this.share(d.name);
                     else if (d.act === 'move') this.showMoveDetail(d.move);
                     else if (d.act === 'close-move') $('modal-content').parentElement.querySelector('.dialog-scrim')?.remove();
                 });
                 $('modal-content').addEventListener('keydown', e => {
                     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr[data-move]')) { e.preventDefault(); this.showMoveDetail(e.target.dataset.move); }
                 });
+                $('grid').addEventListener('click', e => {
+                    const f = e.target.closest('[data-fav]');
+                    if (f) { e.preventDefault(); this.toggleFav(f.dataset.fav); }
+                });
+                $('compare-content').addEventListener('click', e => {
+                    const b = e.target.closest('[data-act]');
+                    if (!b) return;
+                    if (b.dataset.act === 'cmp-remove') { this.toggleCompare(b.dataset.name); if (this.compare.length >= 2) this.renderCompare(); else this.closeCompare(); }
+                    else if (b.dataset.act === 'cmp-open') this.closeCompare();
+                });
+                $('suggest').addEventListener('click', () => { this.closeSuggest(); $('q').blur(); });
+                document.addEventListener('click', e => { if (!e.target.closest('.mast-search')) this.closeSuggest(); });
                 window.addEventListener('hashchange', () => this.syncFromHash());
                 window.addEventListener('popstate', () => this.syncFromHash());
+                window.addEventListener('resize', () => { if (!isPhone() && this.panel) this.closePanel(); });
                 document.addEventListener('keydown', e => {
                     if (e.key === 'Escape') {
+                        if ($('suggest').classList.contains('open')) { this.closeSuggest(); return; }
+                        if ($('compare-modal').classList.contains('open')) { this.closeCompare(); return; }
                         const dlg = document.querySelector('.sheet .dialog-scrim');
                         if (dlg) { dlg.remove(); return; }
                         if ($('search-selector-modal').classList.contains('open')) { this.closeSearchSelector(); return; }
                         if ($('modal').classList.contains('open')) { this.closeModal(); return; }
-                        if ($('sidebar').classList.contains('open')) { this.toggleFilter(); }
+                        if (this.panel) this.closePanel();
                     } else if (e.key === '/' && !e.target.closest('input, select, textarea') && !e.metaKey && !e.ctrlKey) {
                         e.preventDefault();
                         $('q').focus();
+                    } else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && $('modal').classList.contains('open')
+                        && !$('compare-modal').classList.contains('open') && !e.target.closest('input, select, textarea')
+                        && !document.querySelector('.sheet .dialog-scrim') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                        this.stepEntry(e.key === 'ArrowRight' ? 1 : -1);
                     }
                 });
+            },
+
+            /* ---------- Today's species ---------- */
+            async pickSpotlight() {
+                const orgs = this.db.orgs;
+                if (!orgs.length) return;
+                const d = new Date();
+                const seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate();
+                const cands = [...new Set(Array.from({ length: 8 }, (_, i) => (seed * 7919 + i * 104729) % orgs.length))].map(i => orgs[i]);
+                let chosen = null;
+                for (const c of cands) {
+                    if (await Sprites.probe(c)) { chosen = c; break; }
+                }
+                this.renderSpotlight(chosen || cands[0]);
+            },
+
+            renderSpotlight(org) {
+                const t = org._t;
+                const rarity = (org.rarity || 'common').toLowerCase();
+                const host = $('spotlight');
+                this.spotHue = t.hue;
+                if (this.mode === 'animals') $('hero').style.setProperty('--hue', t.hue);
+                host.style.setProperty('--hue', t.hue);
+                host.href = this.hashFor(org.name);
+                host.setAttribute('aria-label', `Today's species: ${org._name}`);
+                host.classList.remove('is-loading');
+                host.classList.add('is-in');
+                const diet = org.diet && !NONE.test(org.diet) ? org.diet : '';
+                host.innerHTML = `<div class="plate" data-org="${esc(org.name)}" data-eager="1">
+                        <span class="spot-flag">Today's species</span>
+                        <div class="plate-fallback" aria-hidden="true">${esc(org._name.charAt(0))}</div>
+                    </div>
+                    <div class="spot-body">
+                        <div class="spot-kicker">Today's species</div>
+                        <div class="spot-name">${esc(org._name)}</div>
+                        <div class="spot-sci">${esc(t.sci || 'Species not recorded')}</div>
+                        <div class="spot-facts">
+                            <span class="pill"><i class="rarity-dot" style="background:${this.rarityColor(rarity)}"></i>${esc(sentence(rarity))}</span>
+                            ${t.cCommon || t.cls ? `<span class="pill">${esc(t.cCommon || t.cls)}</span>` : ''}
+                            ${parseFloat(org.weight) > 0 ? `<span class="pill">${esc(this.fmtWeight(org.weight))}</span>` : ''}
+                            ${diet ? `<span class="pill">${esc(sentence(diet))}</span>` : ''}
+                        </div>
+                    </div>`;
+                this.mountPlates(host);
+            },
+
+            random() {
+                const list = this.db.orgs;
+                if (!list.length) return;
+                let pick = list[Math.floor(Math.random() * list.length)];
+                if (list.length > 1 && this.currentEntry === 'species:' + pick.name) pick = list[(list.indexOf(pick) + 1) % list.length];
+                this.showDetail(pick.name);
+            },
+
+            /* ---------- Search suggestions ---------- */
+            onSearch() {
+                this.filter();
+                clearTimeout(this._sgT);
+                this._sgT = setTimeout(() => this.suggest(), 90);
+            },
+
+            suggest() {
+                const q = $('q').value.trim().toLowerCase();
+                if (this.mode !== 'animals' || q.length < 2) { this.closeSuggest(); return; }
+                const scored = [];
+                for (const o of this.db.orgs) {
+                    const n = o._name.toLowerCase();
+                    let s = -1;
+                    if (n === q) s = 0;
+                    else if (n.startsWith(q)) s = 1;
+                    else if (n.split(/\s+/).some(w => w.startsWith(q))) s = 2;
+                    else if (n.includes(q)) s = 3;
+                    else if (o._t.sci.toLowerCase().includes(q)) s = 4;
+                    if (s >= 0) scored.push([s, o]);
+                }
+                scored.sort((a, b) => a[0] - b[0] || a[1]._name.localeCompare(b[1]._name));
+                const top = scored.slice(0, 6).map(x => x[1]);
+                const box = $('suggest');
+                if (!top.length) { this.closeSuggest(); return; }
+                this.sgIndex = -1;
+                box.innerHTML = top.map((o, i) => `<li role="presentation"><a class="sg-item hued" id="sg-${i}" role="option" style="--hue:${o._t.hue}" href="${this.hashFor(o.name)}">
+                        <div class="plate" data-org="${esc(o.name)}"><div class="plate-fallback" aria-hidden="true">${esc(o._name.charAt(0))}</div></div>
+                        <span class="sg-text"><span class="sg-name">${esc(o._name)}</span><span class="sg-sci">${esc(o._t.sci)}</span></span>
+                        <span class="sg-class">${esc(o._t.cCommon || o._t.cls)}</span></a></li>`).join('');
+                this.mountPlates(box);
+                box.classList.add('open');
+                $('q').setAttribute('aria-expanded', 'true');
+            },
+
+            closeSuggest() {
+                $('suggest').classList.remove('open');
+                $('q').setAttribute('aria-expanded', 'false');
+                $('q').removeAttribute('aria-activedescendant');
+                this.sgIndex = -1;
+            },
+
+            onSearchKey(e) {
+                const box = $('suggest');
+                if (!box.classList.contains('open')) return;
+                const items = [...box.querySelectorAll('.sg-item')];
+                if (!items.length) return;
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.sgIndex = (this.sgIndex + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+                    items.forEach((el, i) => el.classList.toggle('is-active', i === this.sgIndex));
+                    items[this.sgIndex].scrollIntoView({ block: 'nearest' });
+                    $('q').setAttribute('aria-activedescendant', items[this.sgIndex].id);
+                } else if (e.key === 'Enter' && this.sgIndex >= 0) {
+                    e.preventDefault();
+                    items[this.sgIndex].click();
+                }
+            },
+
+            /* ---------- Saved animals ---------- */
+            loadFavs() {
+                try { this.favs = new Set(JSON.parse(localStorage.getItem('anidex-favs') || '[]')); } catch (e) { this.favs = new Set(); }
+            },
+            saveFavs() {
+                try { localStorage.setItem('anidex-favs', JSON.stringify([...this.favs])); } catch (e) { }
+            },
+            toggleFav(name) {
+                const org = this.byName.get(name);
+                if (!org) return;
+                if (this.favs.has(name)) { this.favs.delete(name); this.toast(`Removed ${org._name} from saved`); }
+                else { this.favs.add(name); this.toast(`Saved ${org._name}`); }
+                this.saveFavs();
+                this.syncFavUI();
+                if (this.onlyFav && this.mode === 'animals') this.filter();
+            },
+            syncFavUI() {
+                document.querySelectorAll('[data-fav]').forEach(b => {
+                    const on = this.favs.has(b.dataset.fav);
+                    b.setAttribute('aria-pressed', String(on));
+                    const l = b.querySelector('.fav-label');
+                    if (l) l.textContent = on ? 'Saved' : 'Save';
+                });
+                document.querySelectorAll('.fav-count').forEach(el => { el.textContent = this.favs.size || ''; });
+            },
+            favBtn(org) {
+                return `<button type="button" class="fav" data-fav="${esc(org.name)}" aria-pressed="${this.favs.has(org.name)}" aria-label="Save ${esc(org._name)}">${ico('heart')}</button>`;
+            },
+
+            /* ---------- Compare ---------- */
+            toggleCompare(name) {
+                const i = this.compare.indexOf(name);
+                if (i >= 0) this.compare.splice(i, 1);
+                else {
+                    if (this.compare.length >= 3) { this.toast('You can compare up to 3 animals'); return; }
+                    this.compare.push(name);
+                }
+                this.syncCompareUI();
+            },
+            clearCompare() { this.compare = []; this.syncCompareUI(); },
+            syncCompareUI() {
+                const n = this.compare.length;
+                const names = this.compare.map(k => (this.byName.get(k) || {})._name).filter(Boolean);
+                $('tray').classList.toggle('show', n > 0);
+                $('tray-text').textContent = n === 1 ? `${names[0]} added. Pick one more to compare.` : names.join(', ');
+                $('tray-go').disabled = n < 2;
+                document.querySelectorAll('[data-cmp]').forEach(b => {
+                    const on = this.compare.includes(b.dataset.cmp);
+                    b.setAttribute('aria-pressed', String(on));
+                    const l = b.querySelector('.cmp-label');
+                    if (l) l.textContent = on ? 'In comparison' : 'Compare';
+                });
+            },
+            openCompare() {
+                if (this.compare.length < 2) { this.toast('Add at least two animals to compare'); return; }
+                this.renderCompare();
+                $('compare-modal').classList.add('open');
+                this.syncLock();
+            },
+            closeCompare() {
+                $('compare-modal').classList.remove('open');
+                this.syncLock();
+            },
+            renderCompare() {
+                const list = this.compare.map(n => this.byName.get(n)).filter(Boolean);
+                if (list.length < 2) { this.closeCompare(); return; }
+                const cols = list.length;
+                const head = `<div class="cmp-row cmp-head"><div></div>${list.map(o => `<div class="hued" style="--hue:${o._t.hue}">
+                        <div class="plate" data-org="${esc(o.name)}" data-eager="1"><div class="plate-fallback" aria-hidden="true">${esc(o._name.charAt(0))}</div></div>
+                        <a class="cmp-name" href="${this.hashFor(o.name)}" data-act="cmp-open">${esc(o._name)}</a>
+                        <div class="cmp-sci">${esc(o._t.sci)}</div>
+                        <button class="btn cmp-remove" data-act="cmp-remove" data-name="${esc(o.name)}">Remove</button></div>`).join('')}</div>`;
+                const frow = (label, fn) => `<div class="cmp-row"><div class="cmp-k">${label}</div>${list.map(o => `<div class="cmp-v">${fn(o)}</div>`).join('')}</div>`;
+                const srow = (label, get, max) => {
+                    const vals = list.map(get);
+                    const best = Math.max(...vals);
+                    return `<div class="cmp-row"><div class="cmp-k">${label}</div>${list.map((o, i) => `<div class="cmp-bar hued ${vals[i] === best && best > 0 ? 'is-best' : ''}" style="--hue:${o._t.hue}">
+                        <b>${nf(vals[i])}</b><div class="stat-track"><div class="stat-fill" style="width:${Math.min(100, vals[i] / max * 100)}%"></div></div></div>`).join('')}</div>`;
+                };
+                const sub = t => `<div class="cmp-row"><div class="cmp-sub">${t}</div></div>`;
+                const html = `<div class="cmp" style="--cols:${cols}">
+                    ${head}
+                    ${sub('Facts')}
+                    ${frow('Class', o => esc(o._t.cCommon || o._t.cls || 'Unknown'))}
+                    ${frow('Family', o => esc(o._t.fam || 'Unknown'))}
+                    ${frow('Rarity', o => `<span class="rar"><i class="rarity-dot" style="background:${this.rarityColor((o.rarity || 'common').toLowerCase())}"></i>${esc(sentence(o.rarity || 'common'))}</span>`)}
+                    ${frow('Diet', o => esc(sentence(o.diet && !NONE.test(o.diet) ? o.diet : 'Unknown')))}
+                    ${frow('Weight', o => esc(this.fmtWeight(o.weight)))}
+                    ${frow('Size', o => esc(this.fmtSize(o.size)))}
+                    ${sub('Base stats')}
+                    ${STAT_DEFS.map(([label, key, max]) => srow(label, o => o[key] || 0, max)).join('')}
+                    ${srow('Total', o => o._bst, 1400)}
+                </div>`;
+                const box = $('compare-content');
+                box.innerHTML = html;
+                box.scrollTop = 0;
+                this.mountPlates(box);
+            },
+
+            /* ---------- Toast & share ---------- */
+            toast(msg) {
+                const t = $('toast');
+                t.textContent = msg;
+                t.classList.add('show');
+                clearTimeout(this._tt);
+                this._tt = setTimeout(() => t.classList.remove('show'), 2200);
+            },
+            async share(name) {
+                const org = this.byName.get(name);
+                if (!org) return;
+                const url = location.href.split('#')[0] + this.hashFor(name);
+                try {
+                    if (navigator.share) { await navigator.share({ title: `${org._name} — Anidex`, url }); return; }
+                } catch (e) { if (e && e.name === 'AbortError') return; }
+                try { await navigator.clipboard.writeText(url); this.toast('Link copied'); }
+                catch (e) { this.toast('Copy the link from your browser bar'); }
             },
 
             /* ---------- Filters ---------- */
@@ -716,7 +1166,7 @@
                 this.db.orgs.forEach(o => {
                     const t = o._t;
                     if (!t.cls) return;
-                    const e = map.get(t.cls) || { cls: t.cls, count: 0, rank: t.cRank, common: t.cCommon };
+                    const e = map.get(t.cls) || { cls: t.cls, count: 0, rank: t.cRank, common: t.cCommon, hue: t.hue };
                     e.count++;
                     map.set(t.cls, e);
                 });
@@ -726,28 +1176,41 @@
             buildClassIndex() {
                 const list = this.classList();
                 const total = this.db.orgs.length;
-                $('hero-lede').textContent = `${nf(total)} species in ${nf(list.length)} ${list.length === 1 ? 'class' : 'classes'}, arranged by scientific classification. Choose a group below, or search by name.`;
+                $('hero-lede').textContent = `${nf(total)} species in ${nf(list.length)} ${list.length === 1 ? 'class' : 'classes'}, arranged by scientific classification. Search by name, browse a group, or compare animals side by side.`;
                 const host = $('class-index');
                 host.innerHTML = '';
-                const mk = (label, count, cls, title) => {
+                const mk = (label, count, cls, hue, title) => {
                     const b = document.createElement('button');
-                    b.className = 'class-tab';
+                    b.className = 'class-tab hued';
                     b.type = 'button';
+                    b.style.setProperty('--hue', hue);
                     b.setAttribute('role', 'tab');
                     b.dataset.cls = cls;
                     if (title) b.title = title;
-                    b.innerHTML = `${esc(label)} <span class="tab-count">${nf(count)}</span>`;
+                    b.innerHTML = `<i></i>${esc(label)} <span class="tab-count">${nf(count)}</span>`;
                     b.onclick = () => this.goTaxon({ cls });
                     host.appendChild(b);
                 };
-                mk('All animals', total, '');
-                list.forEach(c => mk(c.common || c.cls, c.count, c.cls, c.common ? `${c.cls} (${c.common.toLowerCase()})` : c.cls));
+                mk('All animals', total, '', 190);
+                list.forEach(c => mk(c.common || c.cls, c.count, c.cls, c.hue, c.common ? `${c.cls} (${c.common.toLowerCase()})` : c.cls));
                 this.updateTabs();
             },
 
             updateTabs() {
                 const cur = $('flt-class').value;
-                document.querySelectorAll('.class-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.cls === cur)));
+                let active = null;
+                document.querySelectorAll('.class-tab').forEach(b => {
+                    const on = b.dataset.cls === cur;
+                    b.setAttribute('aria-selected', String(on));
+                    if (on) active = b;
+                });
+                // Keep the chosen chip visible when the row scrolls sideways.
+                if (active && this._lastTab !== cur) {
+                    const row = $('class-index');
+                    const target = active.offsetLeft - (row.clientWidth - active.offsetWidth) / 2;
+                    row.scrollTo({ left: Math.max(0, target), behavior: reduceMotion() ? 'auto' : 'smooth' });
+                }
+                this._lastTab = cur;
             },
 
             onClassChange() {
@@ -763,7 +1226,9 @@
             // Jump to a place in the classification tree (used by tabs, headings, crumbs, related species).
             goTaxon({ cls = '', ord = '', fam = '', sub = '', gen = '' } = {}) {
                 if (this.mode !== 'animals') this.setMode('animals', true);
+                this.onlyFav = false;
                 $('q').value = '';
+                this.closeSuggest();
                 $('flt-class').value = cls;
                 this.setPicker('order', ord);
                 this.setPicker('family', fam);
@@ -771,8 +1236,12 @@
                 this.setPicker('genus', gen);
                 if (this.sortBy !== 'taxonomy') this.setSort('taxonomy', true);
                 this.filter();
+                this.scrollToResults();
+            },
+
+            scrollToResults() {
                 const bar = document.querySelector('.toolbar');
-                const top = bar.getBoundingClientRect().top + window.scrollY - (window.innerWidth > 900 ? 84 : 12);
+                const top = bar.getBoundingClientRect().top + window.scrollY - (isPhone() ? 70 : 140);
                 if (window.scrollY > top) window.scrollTo({ top, behavior: reduceMotion() ? 'auto' : 'smooth' });
             },
 
@@ -797,6 +1266,7 @@
 
                 this.filtered = this.db.orgs.filter(o => {
                     const t = o._t;
+                    if (this.onlyFav && !this.favs.has(o.name)) return false;
                     if (q && !o._hay.includes(q)) return false;
                     if (aClass && t.cls !== aClass) return false;
                     if (aOrder && t.ord !== aOrder) return false;
@@ -852,10 +1322,15 @@
                 this.renderChrome();
 
                 if (!this.filtered.length) {
-                    grid.innerHTML = `<div class="empty"><h3>No animals match these filters</h3>
-                        <p>Try removing a filter or searching for a different name. Classification filters narrow one another, so clearing the class often helps.</p>
-                        <button class="btn btn-primary" id="empty-clear">Clear all filters</button></div>`;
-                    $('empty-clear').onclick = () => this.reset();
+                    const savedEmpty = this.onlyFav && !this.favs.size;
+                    grid.innerHTML = savedEmpty
+                        ? `<div class="empty"><h3>Nothing saved yet</h3>
+                            <p>Tap the heart on any animal to keep it here. Your saved animals stay on this device.</p>
+                            <button class="btn btn-primary" id="empty-clear">Browse animals</button></div>`
+                        : `<div class="empty"><h3>No animals match these filters</h3>
+                            <p>Try removing a filter or searching for a different name. Classification filters narrow one another, so clearing the class often helps.</p>
+                            <button class="btn btn-primary" id="empty-clear">Clear all filters</button></div>`;
+                    $('empty-clear').onclick = () => savedEmpty ? this.goHome() : this.reset();
                     $('loading-more').style.display = 'none';
                     return;
                 }
@@ -901,8 +1376,9 @@
                 const noun = this.mode === 'items' ? 'items' : 'species';
                 const shown = this.mode === 'items' ? this.itemsShown : this.filtered.length;
                 $('result-count').innerHTML = chips.length
-                    ? `${nf(shown)} ${shown === 1 && noun === 'species' ? 'species' : noun}<small>of ${nf(total)}</small>`
+                    ? `${nf(shown)} ${noun}<small>of ${nf(total)}</small>`
                     : `${nf(total)} ${noun}`;
+                $('apply-count').textContent = `${nf(shown)} ${noun}`;
 
                 // Active filter chips
                 const host = $('active-filters');
@@ -923,7 +1399,8 @@
                     b.onclick = () => this.reset();
                     host.appendChild(b);
                 }
-                $('filter-count').textContent = chips.length ? ` (${chips.length})` : '';
+                const railCount = chips.filter(c => c.rail).length;
+                $('filter-badge').textContent = railCount || '';
 
                 // Breadcrumb
                 const crumbs = [];
@@ -940,29 +1417,31 @@
                     else { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.onclick = () => this.goTaxon(to); el.appendChild(b); }
                     ol.appendChild(el);
                 };
-                li('All animals', {}, !crumbs.length);
+                li(this.onlyFav ? 'Saved animals' : 'All animals', {}, !crumbs.length);
                 crumbs.forEach((c, i) => li(c.label, c.to, i === crumbs.length - 1));
                 nav.appendChild(ol);
 
                 this.updateTabs();
+                this.syncNav();
             },
 
             activeFilters() {
                 const chips = [];
                 const q = $('q').value.trim();
-                if (q) chips.push({ label: 'Search', text: q, clear: () => { $('q').value = ''; this.filter(); } });
+                if (q) chips.push({ label: 'Search', text: q, clear: () => { $('q').value = ''; this.closeSuggest(); this.filter(); } });
                 if (this.mode === 'items') {
                     const el = $('flt-item-cat');
-                    if (el.value) chips.push({ label: 'Category', text: el.selectedOptions[0].text, clear: () => { el.selectedIndex = 0; this.filterItems(); } });
+                    if (el.value) chips.push({ label: 'Category', text: el.selectedOptions[0].text, rail: true, clear: () => { el.selectedIndex = 0; this.filterItems(); } });
                     return chips;
                 }
+                if (this.onlyFav) chips.push({ label: 'Showing', text: 'saved animals', clear: () => this.setSaved(false) });
                 FILTER_DEFS.forEach(([id, label]) => {
                     const el = $(id);
                     if (!el || !el.value) return;
                     const text = el.tagName === 'SELECT' ? el.selectedOptions[0].text : el.value;
-                    chips.push({ label, text, clear: () => this.clearFilter(id) });
+                    chips.push({ label, text, rail: true, clear: () => this.clearFilter(id) });
                 });
-                if ($('chk-exclude-mythical').checked) chips.push({ label: 'Excluding', text: 'mythical', clear: () => { $('chk-exclude-mythical').checked = false; this.filter(); } });
+                if ($('chk-exclude-mythical').checked) chips.push({ label: 'Excluding', text: 'mythical', rail: true, clear: () => { $('chk-exclude-mythical').checked = false; this.filter(); } });
                 return chips;
             },
 
@@ -1004,27 +1483,28 @@
             headings(org, frag) {
                 const t = org._t, L = this.last;
                 if (t.cls !== L.cls) {
-                    frag.appendChild(this.headEl('class', t.cls || 'Unclassified', this.counts.c.get(t.cls), t.cCommon, { cls: t.cls }));
+                    frag.appendChild(this.headEl('class', t.cls || 'Unclassified', this.counts.c.get(t.cls), t.cCommon, { cls: t.cls }, t.hue));
                     L.cls = t.cls; L.ord = null; L.fam = null;
                 }
                 if (t.ord !== L.ord) {
-                    if (t.ord) frag.appendChild(this.headEl('order', t.ord, this.counts.o.get(t.cls + '|' + t.ord), '', { cls: t.cls, ord: t.ord }));
+                    if (t.ord) frag.appendChild(this.headEl('order', t.ord, this.counts.o.get(t.cls + '|' + t.ord), '', { cls: t.cls, ord: t.ord }, t.hue));
                     L.ord = t.ord; L.fam = null;
                 }
                 if (t.fam !== L.fam) {
-                    if (t.fam) frag.appendChild(this.headEl('family', t.fam, this.counts.f.get(t.cls + '|' + t.ord + '|' + t.fam), '', { cls: t.cls, ord: t.ord, fam: t.fam }));
+                    if (t.fam) frag.appendChild(this.headEl('family', t.fam, this.counts.f.get(t.cls + '|' + t.ord + '|' + t.fam), '', { cls: t.cls, ord: t.ord, fam: t.fam }, t.hue));
                     L.fam = t.fam;
                 }
             },
 
-            headEl(level, title, count, common, to) {
+            headEl(level, title, count, common, to, hue) {
                 const h = document.createElement('div');
-                h.className = 'tax-head is-' + level;
+                h.className = 'tax-head hued is-' + level;
+                h.style.setProperty('--hue', hue);
                 const tag = level === 'class' ? 'h2' : level === 'order' ? 'h3' : 'h4';
                 const rank = level === 'class' ? 'Class' : level === 'order' ? 'Order' : 'Family';
                 h.innerHTML = `<${tag} class="tax-title"><button type="button" class="tax-link" title="Show only ${esc(title)}"><span class="tax-rank">${rank}</span><span class="tax-name">${esc(title)}</span></button></${tag}>
                     ${common ? `<span class="tax-common">${esc(common)}</span>` : ''}
-                    <span class="tax-count">${nf(count || 0)} ${count === 1 ? 'species' : 'species'}</span>`;
+                    <span class="tax-count">${nf(count || 0)} species</span>`;
                 if (title !== 'Unclassified') h.querySelector('button').onclick = () => this.goTaxon(to);
                 return h;
             },
@@ -1046,33 +1526,42 @@
                 });
             },
 
+            rarityLine(org) {
+                const r = (org.rarity || 'common').toLowerCase();
+                return `<span class="rar"><i class="rarity-dot" style="background:${this.rarityColor(r)}"></i>${esc(sentence(r))}</span>`;
+            },
+
             buildAnimalCard(org) {
                 const t = org._t;
-                const a = document.createElement('a');
-                a.className = 'plate-card';
-                a.href = this.hashFor(org.name);
-                a.innerHTML = `${this.plateHTML('org', org.name, org._name.charAt(0))}
-                    <div class="plate-card-name">${esc(org._name)}</div>
-                    <div class="plate-card-sci">${esc(t.sci || 'Species not recorded')}</div>
-                    <div class="plate-card-meta">${esc(this.sortBy === 'taxonomy' ? '' : this.sortMeta(org))}</div>`;
-                this.mountPlates(a);
-                return a;
+                const d = document.createElement('div');
+                d.className = 'card hued';
+                d.style.setProperty('--hue', t.hue);
+                const extra = this.sortBy === 'taxonomy' ? '' : this.sortMeta(org);
+                d.innerHTML = `<a class="plate-card" href="${this.hashFor(org.name)}">
+                        ${this.plateHTML('org', org.name, org._name.charAt(0))}
+                        <div class="plate-card-name">${esc(org._name)}</div>
+                        <div class="plate-card-sci">${esc(t.sci || 'Species not recorded')}</div>
+                        <div class="plate-card-meta">${this.rarityLine(org)}${extra ? `<span class="meta-strong">${esc(extra)}</span>` : ''}</div>
+                    </a>${this.favBtn(org)}`;
+                this.mountPlates(d);
+                return d;
             },
 
             buildRow(org) {
                 const t = org._t;
-                const rc = this.rarityColor((org.rarity || 'common').toLowerCase());
-                const a = document.createElement('a');
-                a.className = 'row';
-                a.href = this.hashFor(org.name);
+                const d = document.createElement('div');
+                d.className = 'row hued';
+                d.style.setProperty('--hue', t.hue);
                 const extra = this.sortBy === 'taxonomy' ? t.gen : this.sortBy === 'name' ? t.fam : this.sortMeta(org);
-                a.innerHTML = `${this.plateHTML('org', org.name, org._name.charAt(0))}
-                    <div><div class="row-name">${esc(org._name)}</div><div class="row-sci">${esc(t.sci || '')}</div></div>
-                    <div class="row-cell row-family">${esc(extra)}</div>
-                    <div class="row-cell row-class">${esc(t.cCommon || t.cls)}</div>
-                    <div class="row-rarity" style="color:var(--ink-2)"><span class="rarity-dot" style="background:${rc}"></span>${esc(sentence(org.rarity || 'common'))}</div>`;
-                this.mountPlates(a);
-                return a;
+                d.innerHTML = `<a class="row-main" href="${this.hashFor(org.name)}">
+                        ${this.plateHTML('org', org.name, org._name.charAt(0))}
+                        <div><div class="row-name">${esc(org._name)}</div><div class="row-sci">${esc(t.sci || '')}</div></div>
+                        <div class="row-cell row-family">${esc(extra)}</div>
+                        <div class="row-cell row-class">${esc(t.cCommon || t.cls)}</div>
+                        <div class="row-rarity"><i class="rarity-dot" style="background:${this.rarityColor((org.rarity || 'common').toLowerCase())}"></i>${esc(sentence(org.rarity || 'common'))}</div>
+                    </a>${this.favBtn(org)}`;
+                this.mountPlates(d);
+                return d;
             },
 
             setupObserver() {
@@ -1104,15 +1593,16 @@
                     return;
                 }
                 items.forEach(item => {
-                    const a = document.createElement('a');
-                    a.className = 'plate-card';
-                    a.href = '#/item/' + encodeURIComponent(item.name);
-                    a.innerHTML = `${this.plateHTML('item', item.name, this.itemName(item).charAt(0))}
+                    const d = document.createElement('div');
+                    d.className = 'card hued';
+                    d.style.setProperty('--hue', 200);
+                    d.innerHTML = `<a class="plate-card" href="#/item/${encodeURIComponent(item.name)}">
+                        ${this.plateHTML('item', item.name, this.itemName(item).charAt(0))}
                         <div class="plate-card-name">${esc(this.itemName(item))}</div>
                         <div class="plate-card-sci" style="font-style:normal">${esc(sentence(item.category || 'Item'))}</div>
-                        <div class="plate-card-meta">${item.price ? esc(item.price) + ' gold' : ''}</div>`;
-                    this.mountPlates(a);
-                    grid.appendChild(a);
+                        <div class="plate-card-meta">${item.price ? `<span class="meta-strong">${esc(item.price)} gold</span>` : ''}</div></a>`;
+                    this.mountPlates(d);
+                    grid.appendChild(d);
                 });
             },
 
@@ -1162,7 +1652,7 @@
                 const id = (cryId || 'default').toLowerCase().replace(/[^a-z0-9_]/g, '');
                 const audio = new Audio(`assets/audio/cries/${id}.mp3`);
                 audio.play().catch(() => {
-                    new Audio('assets/audio/cries/default.mp3').play().catch(e => console.warn('[Anidex] Cry audio not found:', e));
+                    new Audio('assets/audio/cries/default.mp3').play().catch(e => { console.warn('[Anidex] Cry audio not found:', e); this.toast('No recording for this animal yet'); });
                 });
             },
 
@@ -1181,12 +1671,25 @@
                 }
             },
 
-            showDetail(name) {   // public: also used by the bio scanner
+            showDetail(name, replace) {   // public: also used by the bio scanner
                 const h = this.hashFor(name);
-                if (location.hash !== h) location.hash = h; else this.syncFromHash();
+                if (location.hash === h) { this.syncFromHash(); return; }
+                if (replace) { history.replaceState(null, '', location.pathname + location.search + h); this.syncFromHash(); }
+                else location.hash = h;
             },
 
-            openSheet(html, title, key) {
+            stepEntry(dir) {
+                const cur = String(this.currentEntry || '');
+                if (!cur.startsWith('species:')) return;
+                const org = this.byName.get(cur.slice(8));
+                if (!org) return;
+                let list = this.filtered.includes(org) ? this.filtered : (this._taxSorted = this._taxSorted || [...this.db.orgs].sort((a, b) => this.taxCompare(a, b)));
+                const i = list.indexOf(org);
+                if (i < 0 || list.length < 2) return;
+                this.showDetail(list[(i + dir + list.length) % list.length].name, true);
+            },
+
+            openSheet(html, title, key, opts = {}) {
                 if (this.currentEntry === key && $('modal').classList.contains('open')) return false;
                 if (!$('modal').classList.contains('open')) this.lastFocus = document.activeElement;
                 this.currentEntry = key;
@@ -1194,10 +1697,14 @@
                 mc.innerHTML = html;
                 mc.scrollTop = 0;
                 this.mountPlates(mc);
+                $('sheet-nav').hidden = !opts.nav;
+                $('sheet-label').textContent = opts.label || 'Anidex entry';
                 document.title = `${title} — Anidex`;
                 $('modal').classList.add('open');
                 this.syncLock();
-                setTimeout(() => $('modal-close').focus({ preventScroll: true }), 30);
+                this.syncFavUI();
+                this.syncCompareUI();
+                if (!isPhone()) setTimeout(() => $('modal-close').focus({ preventScroll: true }), 30);
                 return true;
             },
 
@@ -1214,7 +1721,7 @@
 
             syncLock() {
                 document.body.classList.toggle('is-locked',
-                    !!document.querySelector('.overlay.open') || $('sidebar').classList.contains('open') && window.innerWidth <= 900);
+                    !!document.querySelector('.overlay.open') || (!!this.panel && isPhone()));
             },
 
             taxAttrs(t, level) {
@@ -1224,6 +1731,25 @@
             },
 
             /* ---------- Species entry ---------- */
+            radar(org) {
+                const cx = 120, cy = 120, R = 78;
+                const pt = (i, f) => { const a = -Math.PI / 2 + i * Math.PI / 3; return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f]; };
+                const poly = f => STAT_DEFS.map((_, i) => pt(i, f).map(n => n.toFixed(1)).join(',')).join(' ');
+                const rings = [0.25, 0.5, 0.75, 1].map(f => `<polygon class="ring" points="${poly(f)}"/>`).join('');
+                const axes = STAT_DEFS.map((_, i) => { const [x, y] = pt(i, 1); return `<line class="axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; }).join('');
+                const vals = STAT_DEFS.map(([, key, max]) => Math.max(0.05, Math.min(1, (org[key] || 0) / max)));
+                const shape = vals.map((f, i) => pt(i, f).map(n => n.toFixed(1)).join(',')).join(' ');
+                const dots = vals.map((f, i) => { const [x, y] = pt(i, f); return `<circle class="dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5"/>`; }).join('');
+                const labels = STAT_DEFS.map(([label], i) => {
+                    const [x, y] = pt(i, 1.2);
+                    const c = Math.cos(-Math.PI / 2 + i * Math.PI / 3);
+                    const anchor = Math.abs(c) < 0.2 ? 'middle' : c > 0 ? 'start' : 'end';
+                    return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="${anchor}">${label === 'Resistance' ? 'Resist.' : label}</text>`;
+                }).join('');
+                const desc = STAT_DEFS.map(([label, key]) => `${label} ${org[key] || 0}`).join(', ');
+                return `<svg viewBox="-10 -6 260 256" role="img" aria-label="Stat chart: ${esc(desc)}">${rings}${axes}<polygon class="shape" points="${shape}"/>${dots}${labels}</svg>`;
+            },
+
             renderDetail(org) {
                 const t = org._t;
                 const rarity = (org.rarity || 'common').toLowerCase();
@@ -1235,6 +1761,7 @@
                 const biomes = splitList(org.habitat);
                 const activity = org.active_time || org.activity;
                 const cry = esc(org.cry || 'default');
+                const diet = sentence(org.diet && !NONE.test(org.diet) ? org.diet : 'Unknown');
 
                 const crumbItems = [`<li><button data-act="taxon">Animalia</button></li>`];
                 [['cls', 'cls'], ['ord', 'ord'], ['fam', 'fam'], ['sub', 'sub'], ['gen', 'gen']].forEach(([k, lvl]) => {
@@ -1244,30 +1771,30 @@
                 const tx = (label, k) => t[k] ? `<tr><th scope="row">${label}</th><td><button data-act="taxon" ${this.taxAttrs(t, k)} title="Browse ${esc(t[k])}">${esc(t[k])}</button></td></tr>` : '';
                 const infobox = `
                 <aside class="infobox" aria-label="Summary">
-                    <figure>
-                        ${`<div class="plate" data-org="${esc(org.name)}" data-eager="1"><div class="plate-fallback" aria-hidden="true">${esc(org._name.charAt(0))}</div></div>`}
+                    <figure class="panel entry-fig">
+                        <div class="plate" data-org="${esc(org.name)}" data-eager="1"><div class="plate-fallback" aria-hidden="true">${esc(org._name.charAt(0))}</div></div>
                         <figcaption>${esc(org._name)}${t.sci ? `, <i>${esc(t.sci)}</i>` : ''}</figcaption>
                     </figure>
-                    <table>
+                    <div class="panel tax"><table>
                         <caption>Scientific classification</caption>
                         <tbody>
                             <tr><th scope="row">Kingdom</th><td>Animalia</td></tr>
                             ${tx('Class', 'cls')}${tx('Order', 'ord')}${tx('Family', 'fam')}${tx('Subfamily', 'sub')}${tx('Genus', 'gen')}
                             ${t.sci ? `<tr><th scope="row">Species</th><td><i>${esc(t.sci)}</i></td></tr>` : ''}
                         </tbody>
-                    </table>
-                    <table>
+                    </table></div>
+                    <div class="panel facts"><table>
                         <caption>Quick facts</caption>
                         <tbody>
                             <tr><th scope="row">Weight</th><td>${esc(this.fmtWeight(org.weight))}</td></tr>
                             <tr><th scope="row">Length or height</th><td>${esc(this.fmtSize(org.size))}</td></tr>
                             <tr><th scope="row">Robustness</th><td>${this.robustness(org).toFixed(2)} λ</td></tr>
-                            <tr><th scope="row">Diet</th><td>${esc(sentence(org.diet && !NONE.test(org.diet) ? org.diet : 'Unknown'))}</td></tr>
+                            <tr><th scope="row">Diet</th><td>${esc(diet)}</td></tr>
                             <tr><th scope="row">Active</th><td>${esc(sentence(activity && !NONE.test(activity) ? activity : 'Unknown'))}</td></tr>
                             <tr><th scope="row">Rarity</th><td><span class="rarity-tag"><span class="rarity-dot" style="background:${rc}"></span>${esc(sentence(rarity))}</span></td></tr>
                             <tr><th scope="row">${cats.length > 1 ? 'Categories' : 'Category'}</th><td><span class="cat-list">${cats.map(c => `<span class="cat"><img src="assets/icon/${esc(slug(c))}.png" alt="" onerror="this.remove()">${esc(sentence(c))}</span>`).join('')}</span></td></tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 </aside>`;
 
                 const paragraphs = String(org.description || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
@@ -1275,8 +1802,7 @@
                     ? paragraphs.map(p => `<p>${esc(p)}</p>`).join('')
                     : `<p class="muted">No description has been written for this species yet.</p>`;
 
-                const stats = [['Health', 'health', 500], ['Attack', 'attack', 200], ['Defense', 'defense', 200], ['Power', 'power', 200], ['Resistance', 'resistance', 200], ['Speed', 'speed', 200]];
-                const statsHTML = stats.map(([label, key, max]) => {
+                const statsHTML = STAT_DEFS.map(([label, key, max]) => {
                     const val = org[key] || 0;
                     return `<div class="stat"><span class="stat-label">${label}</span>
                         <div class="stat-track" role="img" aria-label="${label} ${val} of ${max}"><div class="stat-fill" style="width:${Math.min(100, val / max * 100)}%"></div></div>
@@ -1307,35 +1833,64 @@
                 }).join('') : '<span class="dim">No drops listed.</span>';
 
                 const rel = this.related(org);
-                const relHTML = rel.list.length ? `<section>
+                const relHTML = rel.list.length ? `<section id="sec-related">
                     <h2>Related species</h2>
                     <p class="section-note">Other members of the ${esc(rel.scope)}.</p>
-                    <div class="related">${rel.list.map(o => `<a class="plate-card" href="${this.hashFor(o.name)}">${this.plateHTML('org', o.name, o._name.charAt(0))}
+                    <div class="related">${rel.list.map(o => `<a class="plate-card hued" style="--hue:${o._t.hue}" href="${this.hashFor(o.name)}">${this.plateHTML('org', o.name, o._name.charAt(0))}
                         <div class="plate-card-name">${esc(o._name)}</div><div class="plate-card-sci">${esc(o._t.sci)}</div></a>`).join('')}</div>
                     ${rel.total > rel.list.length ? `<p style="margin-top:16px"><button class="btn" data-act="taxon" ${rel.attrs}>See all ${nf(rel.total + 1)} in ${esc(rel.label)}</button></p>` : ''}
                 </section>` : '';
 
-                const html = `<article class="article">
+                const list = this.filtered.includes(org) ? this.filtered : null;
+                const pos = list ? list.indexOf(org) + 1 : 0;
+                const label = list && list.length > 1 ? `${nf(pos)} of ${nf(list.length)} in this list` : 'Anidex entry';
+
+                const html = `<article class="article hued" style="--hue:${t.hue}">
                     <nav class="article-crumbs" aria-label="Classification"><ol>${crumbItems.join('')}</ol></nav>
                     <h1 class="article-title" id="entry-title">${esc(org._name)}</h1>
                     ${t.sci ? `<p class="article-sci">${esc(t.sci)}</p>` : ''}
+                    <div class="badges">
+                        ${t.cCommon || t.cls ? `<span class="badge is-class">${esc(t.cCommon || t.cls)}</span>` : ''}
+                        <span class="badge"><span class="rarity-dot" style="background:${rc}"></span>${esc(sentence(rarity))}</span>
+                    </div>
                     <div class="article-actions">
-                        <button class="btn" data-act="cry" data-cry="${cry}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
-                            Hear its call</button>
+                        <button class="btn" data-act="cry" data-cry="${cry}">${ico('sound')}Hear its call</button>
+                        <button class="btn" data-fav="${esc(org.name)}" aria-pressed="${this.favs.has(org.name)}">${ico('heart')}<span class="fav-label">${this.favs.has(org.name) ? 'Saved' : 'Save'}</span></button>
+                        <button class="btn" data-cmp="${esc(org.name)}" aria-pressed="${this.compare.includes(org.name)}">${ico('compare')}<span class="cmp-label">${this.compare.includes(org.name) ? 'In comparison' : 'Compare'}</span></button>
+                        <button class="btn" data-act="share" data-name="${esc(org.name)}">${ico('share')}Share</button>
+                    </div>
+                    <div class="jump" role="navigation" aria-label="Sections">
+                        <button data-jump="sec-about">About</button>
+                        <button data-jump="sec-habitat">Habitat</button>
+                        <button data-jump="sec-stats">Stats</button>
+                        <button data-jump="sec-moves">Moves</button>
+                        ${rel.list.length ? '<button data-jump="sec-related">Related</button>' : ''}
                     </div>
                     <div class="article-layout">
+                        <dl class="glance">
+                            <div><dt>Weight</dt><dd>${esc(this.fmtWeight(org.weight))}</dd></div>
+                            <div><dt>Size</dt><dd>${esc(this.fmtSize(org.size))}</dd></div>
+                            <div><dt>Diet</dt><dd>${esc(diet)}</dd></div>
+                        </dl>
                         <div class="article-text">
-                            <section class="lead" aria-label="Overview">${overview}</section>
-                            <section><h2>Habitat</h2><div class="chips">${biomesHTML}</div></section>
-                            <section>
+                            <section class="lead" id="sec-about" aria-label="Overview">${overview}</section>
+                            <section id="sec-habitat"><h2>Habitat</h2><div class="chips">${biomesHTML}</div></section>
+                            <section id="sec-stats">
                                 <h2>Combat profile</h2>
-                                <p class="section-note">Game data for this species: base stats, abilities, moves and the items it drops.</p>
+                                <p class="section-note">Game data for this species: base stats and abilities.</p>
                                 <h3>Base stats</h3>
-                                <div class="stats">${statsHTML}</div>
-                                <div class="stat-total"><span>Base stat total</span><span>${org._bst}</span></div>
+                                <div class="statwrap">
+                                    <div class="radar">${this.radar(org)}</div>
+                                    <div>
+                                        <div class="stats">${statsHTML}</div>
+                                        <div class="stat-total"><span>Base stat total</span><span>${org._bst}</span></div>
+                                    </div>
+                                </div>
                                 <h3>Abilities</h3>${abilitiesHTML}
-                                <h3>Moves</h3>${movesHTML}
+                            </section>
+                            <section id="sec-moves">
+                                <h2>Moves and drops</h2>
+                                ${movesHTML}
                                 <h3>Drops</h3><div class="chips">${dropsHTML}</div>
                             </section>
                             ${relHTML}
@@ -1344,7 +1899,7 @@
                     </div>
                 </article>`;
 
-                this.openSheet(html, org._name, 'species:' + org.name);
+                this.openSheet(html, org._name, 'species:' + org.name, { nav: true, label });
             },
 
             related(org) {
@@ -1390,7 +1945,7 @@
             renderItemDetail(item) {
                 const effects = (item.effects || []).map(e => `<div><dt>${esc(sentence(e.type || 'Effect'))}</dt>
                     <dd>Stat: <b>${esc(e.stat || '—')}</b>. Magnitude: <b>${esc(e.magnitude || '—')}×</b></dd></div>`).join('');
-                const html = `<article class="article">
+                const html = `<article class="article hued" style="--hue:200">
                     <nav class="article-crumbs" aria-label="Section"><ol><li><button data-act="taxon">Items</button></li><li>${esc(sentence(item.category || 'Item'))}</li></ol></nav>
                     <h1 class="article-title" id="entry-title">${esc(this.itemName(item))}</h1>
                     ${item.price ? `<p class="article-sci" style="font-style:normal">${esc(item.price)} gold</p>` : ''}
@@ -1399,26 +1954,51 @@
                             <section class="lead"><p>${esc(item.description || 'No description has been written for this item yet.')}</p></section>
                             <section><h2>Modifiers</h2>${effects ? `<dl class="defs">${effects}</dl>` : '<p class="dim">No modifiers listed.</p>'}</section>
                         </div>
-                        <aside class="infobox"><figure>
+                        <aside class="infobox"><figure class="panel entry-fig">
                             <div class="plate" data-item="${esc(item.name)}"><div class="plate-fallback" aria-hidden="true">${esc(this.itemName(item).charAt(0))}</div></div>
                         </figure></aside>
                     </div>
                 </article>`;
-                this.openSheet(html, this.itemName(item), 'item:' + item.name);
+                this.openSheet(html, this.itemName(item), 'item:' + item.name, { nav: false, label: 'Anidex item' });
             },
 
-            /* ---------- Modes, sort, view ---------- */
+            /* ---------- Navigation: modes, saved, sort, view ---------- */
+            goHome() {
+                this.onlyFav = false;
+                if (this.mode !== 'animals') this.setMode('animals', true);
+                this.filter();
+                window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' });
+            },
+
+            setSaved(on) {
+                if (this.mode !== 'animals') this.setMode('animals', true);
+                this.onlyFav = !!on;
+                this.filter();
+                if (on) this.scrollToResults(); else window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' });
+            },
+
             setMode(m, quiet) {
                 this.mode = m;
                 document.body.dataset.mode = m;
-                $('btn-animals').setAttribute('aria-current', m === 'animals' ? 'page' : 'false');
-                $('btn-items').setAttribute('aria-current', m === 'items' ? 'page' : 'false');
+                if (m === 'items') this.onlyFav = false;
                 $('animal-filters').style.display = m === 'animals' ? '' : 'none';
                 $('item-filters').style.display = m === 'items' ? '' : 'none';
                 $('hero-title').textContent = m === 'animals' ? 'An encyclopedia of animal life' : 'Talismans and collectable items';
+                $('hero').style.setProperty('--hue', m === 'animals' ? this.spotHue : 205);
+                this.closeSuggest();
                 if (m === 'items') $('hero-lede').textContent = `${nf(this.db.items.length)} items that can be found, dropped or equipped.`;
                 else if (this.db.orgs.length) this.buildClassIndex();
-                if (!quiet) this.filter();
+                this.syncNav();
+                if (!quiet) { this.filter(); if (m === 'items') window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' }); }
+            },
+
+            syncNav() {
+                const home = this.mode === 'animals' && !this.onlyFav, saved = this.mode === 'animals' && this.onlyFav, items = this.mode === 'items';
+                const cur = (id, on) => { const el = $(id); if (el) el.setAttribute('aria-current', on ? 'page' : 'false'); };
+                cur('btn-animals', home); cur('btn-items', items); cur('btn-saved', saved);
+                cur('tab-animals', home); cur('tab-items', items); cur('tab-saved', saved);
+                $('tab-filters').setAttribute('aria-pressed', String(this.panel === 'sidebar'));
+                $('tab-more').setAttribute('aria-pressed', String(this.panel === 'more'));
             },
 
             setSort(s, quiet) {
@@ -1446,36 +2026,63 @@
 
             setUnitSystem(val) {
                 this.unitSystem = val;
+                $('flt-units').value = val;
+                $('unit-metric').setAttribute('aria-pressed', String(val === 'metric'));
+                $('unit-imperial').setAttribute('aria-pressed', String(val === 'imperial'));
                 this.filter();
+                if (this.compare.length >= 2 && $('compare-modal').classList.contains('open')) this.renderCompare();
                 if ($('modal').classList.contains('open') && String(this.currentEntry).startsWith('species:')) {
                     const org = this.byName.get(this.currentEntry.slice(8));
+                    const top = $('modal-content').scrollTop;
                     this.currentEntry = null;
-                    if (org) this.renderDetail(org);
+                    if (org) { this.renderDetail(org); $('modal-content').scrollTop = top; }
                 }
             },
 
             reset() {
                 $('q').value = '';
+                this.closeSuggest();
                 ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-bst', 'flt-item-cat']
                     .forEach(id => { const el = $(id); if (el) el.selectedIndex = 0; });
                 ['order', 'family', 'subfamily', 'genus'].forEach(k => this.setPicker(k, ''));
                 $('chk-exclude-mythical').checked = false;
-                this.unitSystem = 'metric';
-                $('flt-units').value = 'metric';
+                this.onlyFav = false;
+                this.setUnitSystem('metric');
                 this.setSort('taxonomy', true);
                 this.filter();
             },
 
-            toggleFilter() {
-                $('sidebar').classList.toggle('open');
-                $('sidebar-overlay').classList.toggle('active');
+            /* ---------- Bottom sheets (phones): filters and "More" ---------- */
+            openPanel(id) {
+                this.closePanel(true);
+                $(id).classList.add('open');
+                $('scrim').classList.add('active');
+                this.panel = id;
+                this.syncNav();
                 this.syncLock();
             },
+            closePanel(quiet) {
+                if (!this.panel) return;
+                $(this.panel).classList.remove('open');
+                $('scrim').classList.remove('active');
+                this.panel = null;
+                if (!quiet) { this.syncNav(); this.syncLock(); }
+            },
+            toggleFilter() { this.panel === 'sidebar' ? this.closePanel() : this.openPanel('sidebar'); },
+            toggleMore() { this.panel === 'more' ? this.closePanel() : this.openPanel('more'); },
 
             toggleTheme() {
                 const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', next);
                 try { localStorage.setItem('anidex-theme', next); } catch (e) { }
+                this.syncThemeUI();
+            },
+            syncThemeUI() {
+                const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const l = $('theme-label');
+                if (l) l.textContent = dark ? 'Light theme' : 'Dark theme';
+                const m = document.querySelector('meta[name="theme-color"]');
+                if (m) m.setAttribute('content', dark ? '#0c1719' : '#eef2ee');
             },
 
             /* ---------- Taxon picker ---------- */
@@ -1579,11 +2186,11 @@
                         overlay.style.display = 'none';
                         event.target.value = '';
                         if (results && results.length > 0) App.showDetail(results[0].name);
-                        else alert('No match found.');
+                        else this.toast('No match found. Try a clearer photo.');
                     }, 500);
                 } catch (e) {
                     console.error(e);
-                    alert('Scanner failed.');
+                    this.toast('The scanner could not read that photo.');
                     overlay.style.display = 'none';
                     event.target.value = '';
                 }
